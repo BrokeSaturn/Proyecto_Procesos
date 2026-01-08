@@ -1,0 +1,60 @@
+<!doctype html>
+<html lang="es">
+<head>
+    <meta charset="utf-8">
+    <title>Login - Sistema ESPE</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="login/login.css" rel="stylesheet" type="text/css">
+</head>
+<body class="login-container">
+    <header class="login-header">
+        <div class="login-logo">ESPE</div>
+        <h1>Sistema de Gestión de Aulas de Biblioteca</h1>
+        <p>Universidad de las Fuerzas Armadas ESPE</p>
+    </header>
+
+    <main class="login-main">
+        <div class="login-card">
+            <h2>Iniciar Sesión</h2>
+            
+            <form id="form-login">
+                <div class="form-grupo-login">
+                    <label for="input-nombre">Nombre:</label>
+                    <input type="text" id="input-nombre" class="login-input" 
+                           placeholder="Ingrese su nombre" required>
+                    <div id="error-nombre" class="error-mensaje">
+                        Por favor ingrese su nombre
+                    </div>
+                </div>
+
+                <div class="form-grupo-login">
+                    <label>Seleccione su rol:</label>
+                    <div class="rol-selector">
+                        <div class="rol-option" data-rol="usuario">
+                            <div class="rol-icon">👤</div>
+                            <div class="rol-titulo">Usuario</div>
+                            <div class="rol-descripcion">Reservar aulas</div>
+                        </div>
+                        <div class="rol-option" data-rol="admin">
+                            <div class="rol-icon">⚙️</div>
+                            <div class="rol-titulo">Administrador</div>
+                            <div class="rol-descripcion">Gestionar aulas</div>
+                        </div>
+                    </div>
+                    <div id="error-rol" class="error-mensaje">
+                        Por favor seleccione un rol
+                    </div>
+                </div>
+
+                <button type="submit" class="btn-login">Ingresar al Sistema</button>
+            </form>
+        </div>
+    </main>
+
+    <footer class="login-footer">
+        <p>Sistema de Gestión de Aulas de Biblioteca - Universidad de las Fuerzas Armadas ESPE</p>
+    </footer>
+
+    <script src="login/login.js"></script>
+</body>
+</html>

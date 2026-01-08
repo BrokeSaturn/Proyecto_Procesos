@@ -1,0 +1,237 @@
+@charset "utf-8";
+
+/* Variables compartidas */
+:root {
+    --color-primario: #0b2c4a;      /* Azul oscuro institucional */
+    --color-primario-oscuro: #071d31;
+    --color-secundario: #f4f6f8;    /* Gris claro de fondo */
+    --color-acento: #1f9d55;        /* Verde acento */
+    --color-acento-alt: #ff8c42;    /* Naranja acento */
+    --color-texto: #1a1a1a;
+    --color-texto-suave: #5c6b80;
+    --color-borde-suave: #d1d5db;
+    --color-peligro: #dc2626;
+    --color-advertencia: #f59e0b;
+    --color-info: #2563eb;
+
+    --radio-borde: 0.75rem;
+    --sombra-suave: 0 4px 10px rgba(15, 23, 42, 0.08);
+    --sombra-fuerte: 0 10px 30px rgba(15, 23, 42, 0.25);
+    --transicion-base: 0.2s ease-in-out;
+
+    --fuente-base: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    --ancho-maximo: 1200px;
+}
+
+/* Reset básico */
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+body {
+    font-family: var(--fuente-base);
+    color: var(--color-texto);
+    line-height: 1.5;
+}
+
+/* Contenedor principal del login */
+.login-container {
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    background: linear-gradient(135deg, var(--color-primario), var(--color-primario-oscuro));
+}
+
+/* Header del login */
+.login-header {
+    padding: 2rem 1rem;
+    text-align: center;
+    color: white;
+}
+
+.login-logo {
+    font-size: 2.5rem;
+    font-weight: bold;
+    margin-bottom: 0.5rem;
+    letter-spacing: 2px;
+}
+
+.login-header h1 {
+    font-size: 1.5rem;
+    margin-bottom: 0.5rem;
+}
+
+.login-header p {
+    opacity: 0.9;
+    font-size: 0.9rem;
+}
+
+/* Main del login */
+.login-main {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 2rem 1rem;
+}
+
+/* Tarjeta de login */
+.login-card {
+    background: white;
+    border-radius: var(--radio-borde);
+    box-shadow: var(--sombra-fuerte);
+    width: 100%;
+    max-width: 400px;
+    padding: 2rem;
+}
+
+.login-card h2 {
+    color: var(--color-primario);
+    margin-bottom: 1.5rem;
+    text-align: center;
+    font-size: 1.3rem;
+}
+
+/* Formulario de login */
+.form-grupo-login {
+    margin-bottom: 1.5rem;
+}
+
+.form-grupo-login label {
+    display: block;
+    margin-bottom: 0.5rem;
+    color: var(--color-texto);
+    font-weight: 500;
+}
+
+.login-input {
+    width: 100%;
+    padding: 0.75rem;
+    border: 1px solid var(--color-borde-suave);
+    border-radius: 0.5rem;
+    font-size: 1rem;
+    transition: all var(--transicion-base);
+}
+
+.login-input:focus {
+    outline: none;
+    border-color: var(--color-primario);
+    box-shadow: 0 0 0 3px rgba(11, 44, 74, 0.1);
+}
+
+/* Selector de rol */
+.rol-selector {
+    display: flex;
+    gap: 1rem;
+    margin: 1.5rem 0;
+}
+
+.rol-option {
+    flex: 1;
+    text-align: center;
+    padding: 1rem;
+    border: 2px solid var(--color-borde-suave);
+    border-radius: var(--radio-borde);
+    cursor: pointer;
+    transition: all var(--transicion-base);
+    background: white;
+}
+
+.rol-option:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--sombra-suave);
+}
+
+.rol-option.seleccionado {
+    border-color: var(--color-acento);
+    background-color: rgba(31, 157, 85, 0.05);
+}
+
+.rol-option.seleccionado .rol-icon {
+    color: var(--color-acento);
+}
+
+.rol-option.seleccionado .rol-titulo {
+    color: var(--color-acento);
+}
+
+.rol-icon {
+    font-size: 2rem;
+    margin-bottom: 0.5rem;
+    color: var(--color-texto-suave);
+}
+
+.rol-titulo {
+    font-weight: 600;
+    color: var(--color-texto);
+    margin-bottom: 0.25rem;
+}
+
+.rol-descripcion {
+    font-size: 0.8rem;
+    color: var(--color-texto-suave);
+}
+
+/* Botón de login */
+.btn-login {
+    width: 100%;
+    padding: 1rem;
+    background-color: var(--color-primario);
+    color: white;
+    border: none;
+    border-radius: 0.5rem;
+    font-size: 1rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all var(--transicion-base);
+    margin-top: 1rem;
+}
+
+.btn-login:hover {
+    background-color: var(--color-primario-oscuro);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(11, 44, 74, 0.2);
+}
+
+/* Footer del login */
+.login-footer {
+    text-align: center;
+    padding: 1.5rem;
+    color: rgba(255, 255, 255, 0.7);
+    font-size: 0.8rem;
+}
+
+/* Mensajes de error */
+.error-mensaje {
+    color: var(--color-peligro);
+    font-size: 0.85rem;
+    margin-top: 0.5rem;
+    display: none;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .login-card {
+        padding: 1.5rem;
+    }
+
+    .rol-selector {
+        flex-direction: column;
+    }
+
+    .login-header h1 {
+        font-size: 1.3rem;
+    }
+}
+
+@media (max-width: 480px) {
+    .login-card {
+        padding: 1.25rem;
+    }
+
+    .login-header {
+        padding: 1.5rem 1rem;
+    }
+}

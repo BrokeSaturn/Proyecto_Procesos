@@ -1,0 +1,184 @@
+<!doctype html>
+<html lang="es">
+<head>
+    <meta charset="utf-8">
+    <title>Sistema de Gestion de Aulas - Usuario</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="../css/estilo.css" rel="stylesheet" type="text/css">
+    <style>
+        .usuario-info {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            margin-left: auto;
+            padding: 0.5rem 1rem;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 999px;
+        }
+
+        .usuario-avatar {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            background: var(--color-acento);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+            font-size: 0.9rem;
+        }
+
+        .usuario-datos {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .usuario-nombre {
+            font-size: 0.85rem;
+            font-weight: 500;
+            color: white;
+        }
+
+        .usuario-rol {
+            font-size: 0.7rem;
+            color: rgba(255, 255, 255, 0.8);
+        }
+
+        .btn-logout {
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            background: transparent;
+            color: white;
+            padding: 0.25rem 0.75rem;
+            border-radius: 999px;
+            font-size: 0.8rem;
+            cursor: pointer;
+            margin-left: 0.5rem;
+            transition: all var(--transicion-base);
+        }
+
+        .btn-logout:hover {
+            background: rgba(255, 255, 255, 0.1);
+        }
+
+        .nav-btn-admin {
+            display: none !important;
+        }
+    </style>
+</head>
+<body>
+    <header class="header-espe">
+        <div class="header-logo">
+            <span class="logo-placeholder">ESPE</span>
+        </div>
+        <div class="header-textos">
+            <h1>Sistema de Gestion de Aulas de Biblioteca</h1>
+            <p>Universidad de las Fuerzas Armadas ESPE</p>
+        </div>
+        <div class="usuario-info">
+            <div class="usuario-avatar" id="avatar-usuario">U</div>
+            <div class="usuario-datos">
+                <div class="usuario-nombre" id="nombre-usuario">Usuario</div>
+                <div class="usuario-rol">Usuario</div>
+            </div>
+            <button id="btn-logout" class="btn-logout">Salir</button>
+        </div>
+    </header>
+
+    <nav class="nav-principal">
+        <button id="btn-hoy" class="nav-btn">Hoy</button>
+        <button id="btn-manana" class="nav-btn">Manana</button>
+        <button id="btn-semana" class="nav-btn">Semana completa</button>
+        <button id="btn-mis-reservas" class="nav-btn nav-btn-secundario">Mis reservas</button>
+        <button id="btn-admin" class="nav-btn nav-btn-admin">Panel admin</button>
+    </nav>
+
+    <main class="layout-principal">
+        <!-- Seccion principal de disponibilidad -->
+        <section id="seccion-disponibilidad" class="seccion seccion-activa">
+            <div class="seccion-header">
+                <h2>Disponibilidad de aulas</h2>
+                <p id="texto-filtro-actual" class="texto-filtro">Vista: Hoy</p>
+            </div>
+            <div id="grid-disponibilidad" class="contenedor-disponibilidad">
+                <!-- Aqui se renderiza la matriz horaria desde usuario.js -->
+            </div>
+            <div class="leyenda-estado">
+                <span class="badge badge-disponible">Disponible</span>
+                <span class="badge badge-ocupado">Reservado</span>
+                <span class="badge badge-checkin">Check-in</span>
+                <span class="badge badge-mantenimiento">Mantenimiento</span>
+            </div>
+        </section>
+
+        <!-- Seccion de reservas del usuario -->
+        <section id="seccion-reservas" class="seccion seccion-oculta">
+            <div class="seccion-header">
+                <h2>Mis reservas</h2>
+                <p>Vista de reservas activas del usuario actual.</p>
+            </div>
+            <div class="bloque-usuario">
+                <label for="input-usuario-reservas">Usuario ESPE (ID):</label>
+                <input type="text" id="input-usuario-reservas" placeholder="Ej. L20012345">
+                <button id="btn-cargar-reservas" class="btn-primario">Cargar reservas</button>
+            </div>
+            <div id="lista-reservas-usuario" class="lista-reservas">
+                <!-- Aqui se renderizan las reservas del usuario -->
+            </div>
+        </section>
+
+        <!-- Seccion de panel administrador de aulas (OCULTA PARA USUARIOS) -->
+        <section id="seccion-admin" class="seccion seccion-oculta">
+            <!-- Esta sección está oculta para usuarios -->
+        </section>
+    </main>
+
+    <!-- Modal de reserva -->
+    <div id="overlay-modal" class="overlay oculto"></div>
+
+    <div id="modal-reserva" class="modal oculto">
+        <div class="modal-contenido">
+            <div class="modal-header">
+                <h3>Nueva reserva de aula</h3>
+                <button id="btn-cerrar-modal" class="btn-cerrar-modal" aria-label="Cerrar modal">×</button>
+            </div>
+            <div class="modal-body">
+                <form id="form-reserva" class="form-reserva">
+                    <div class="form-grupo">
+                        <label for="input-usuario">Usuario ESPE (ID):</label>
+                        <input type="text" id="input-usuario" required placeholder="Ej. L20012345">
+                    </div>
+                    <div class="form-grupo">
+                        <label for="input-aula">Aula:</label>
+                        <input type="text" id="input-aula" readonly>
+                    </div>
+                    <div class="form-grupo">
+                        <label for="input-fecha">Fecha:</label>
+                        <input type="text" id="input-fecha" readonly>
+                    </div>
+                    <div class="form-grupo form-grupo-horas">
+                        <div>
+                            <label for="input-hora-inicio">Hora inicio:</label>
+                            <input type="text" id="input-hora-inicio" readonly>
+                        </div>
+                        <div>
+                            <label for="input-hora-fin">Hora fin:</label>
+                            <input type="text" id="input-hora-fin" readonly>
+                        </div>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button id="btn-confirmar-reserva" class="btn-primario">Confirmar reserva</button>
+                <button id="btn-cancelar-modal" class="btn-secundario">Cancelar</button>
+            </div>
+        </div>
+    </div>
+
+    <footer class="footer-espe">
+        <p>Sistema de Gestion de Aulas de Biblioteca - Universidad de las Fuerzas Armadas ESPE</p>
+    </footer>
+
+    <script src="usuario.js"></script>
+</body>
+</html>

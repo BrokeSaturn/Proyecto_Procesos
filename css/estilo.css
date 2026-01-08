@@ -1,0 +1,655 @@
+@charset "utf-8";
+/* =========================================================
+   VARIABLES Y RESET
+   ========================================================= */
+:root {
+    --color-primario: #0b2c4a;      /* Azul oscuro institucional */
+    --color-primario-oscuro: #071d31;
+    --color-secundario: #f4f6f8;    /* Gris claro de fondo */
+    --color-acento: #1f9d55;        /* Verde acento */
+    --color-acento-alt: #ff8c42;    /* Naranja acento */
+    --color-texto: #1a1a1a;
+    --color-texto-suave: #5c6b80;
+    --color-borde-suave: #d1d5db;
+    --color-peligro: #dc2626;
+    --color-advertencia: #f59e0b;
+    --color-info: #2563eb;
+
+    --radio-borde: 0.75rem;
+    --sombra-suave: 0 4px 10px rgba(15, 23, 42, 0.08);
+    --transicion-base: 0.2s ease-in-out;
+
+    --fuente-base: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    --ancho-maximo: 1200px;
+}
+
+/* Reset simple */
+*,
+*::before,
+*::after {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+body {
+    font-family: var(--fuente-base);
+    color: var(--color-texto);
+    background-color: var(--color-secundario);
+    line-height: 1.5;
+}
+
+/* =========================================================
+   LAYOUT GENERAL
+   ========================================================= */
+
+.header-espe {
+    background: linear-gradient(135deg, var(--color-primario), var(--color-primario-oscuro));
+    color: #ffffff;
+    padding: 1rem 1.5rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 1rem;
+}
+
+.header-logo {
+    width: 52px;
+    height: 52px;
+    border-radius: 999px;
+    border: 2px solid rgba(255, 255, 255, 0.7);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+    letter-spacing: 1px;
+}
+
+.logo-placeholder {
+    font-size: 0.9rem;
+}
+
+.header-textos h1 {
+    font-size: 1.4rem;
+    font-weight: 600;
+}
+
+.header-textos p {
+    font-size: 0.9rem;
+    opacity: 0.9;
+}
+
+.nav-principal {
+    background-color: #ffffff;
+    border-bottom: 1px solid var(--color-borde-suave);
+    padding: 0.6rem 1rem;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    justify-content: center;
+}
+
+/* Layout main */
+.layout-principal {
+    max-width: var(--ancho-maximo);
+    margin: 1.5rem auto 2.5rem auto;
+    padding: 0 1rem;
+    display: grid;
+    grid-template-columns: minmax(0, 1.8fr);
+    gap: 1.5rem;
+}
+
+.seccion {
+    background-color: #ffffff;
+    border-radius: var(--radio-borde);
+    box-shadow: var(--sombra-suave);
+    padding: 1.25rem 1.5rem 1.5rem 1.5rem;
+}
+
+.seccion-header {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    align-items: baseline;
+    gap: 0.5rem;
+    margin-bottom: 1rem;
+}
+
+.seccion-header h2 {
+    font-size: 1.2rem;
+}
+
+.texto-filtro {
+    font-size: 0.85rem;
+    color: var(--color-texto-suave);
+}
+
+/* Visibilidad secciones */
+.seccion-oculta {
+    display: none;
+}
+
+.seccion-activa {
+    display: block;
+}
+
+/* =========================================================
+   BOTONES Y ELEMENTOS GENERALES
+   ========================================================= */
+
+.nav-btn {
+    border: 1px solid var(--color-borde-suave);
+    background-color: #ffffff;
+    padding: 0.45rem 0.85rem;
+    border-radius: 999px;
+    font-size: 0.9rem;
+    cursor: pointer;
+    transition: background-color var(--transicion-base),
+                color var(--transicion-base),
+                border-color var(--transicion-base),
+                transform var(--transicion-base);
+}
+
+.nav-btn:hover {
+    background-color: var(--color-primario);
+    color: #ffffff;
+    border-color: var(--color-primario);
+    transform: translateY(-1px);
+}
+
+.nav-btn-secundario {
+    border-color: var(--color-info);
+    color: var(--color-info);
+}
+
+.nav-btn-secundario:hover {
+    background-color: var(--color-info);
+    color: #ffffff;
+}
+
+.nav-btn-admin {
+    border-color: var(--color-advertencia);
+    color: var(--color-advertencia);
+}
+
+.nav-btn-admin:hover {
+    background-color: var(--color-advertencia);
+    color: #ffffff;
+}
+
+.btn-primario {
+    border: none;
+    background-color: var(--color-acento);
+    color: #ffffff;
+    padding: 0.5rem 0.9rem;
+    border-radius: 0.6rem;
+    font-size: 0.9rem;
+    cursor: pointer;
+    transition: background-color var(--transicion-base), transform var(--transicion-base), box-shadow var(--transicion-base);
+    box-shadow: 0 2px 5px rgba(31, 157, 85, 0.25);
+}
+
+.btn-primario:hover {
+    background-color: #1d8c4c;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 10px rgba(31, 157, 85, 0.3);
+}
+
+.btn-secundario {
+    border: 1px solid var(--color-borde-suave);
+    background-color: #ffffff;
+    color: var(--color-texto);
+    padding: 0.45rem 0.85rem;
+    border-radius: 0.6rem;
+    font-size: 0.9rem;
+    cursor: pointer;
+    transition: background-color var(--transicion-base), color var(--transicion-base), border-color var(--transicion-base);
+}
+
+.btn-secundario:hover {
+    background-color: var(--color-secundario);
+}
+
+/* Label tipo badge */
+.badge {
+    display: inline-flex;
+    align-items: center;
+    padding: 0.2rem 0.6rem;
+    border-radius: 999px;
+    font-size: 0.75rem;
+    font-weight: 500;
+    border: 1px solid transparent;
+}
+
+.badge-disponible {
+    background-color: rgba(34, 197, 94, 0.12);
+    color: #15803d;
+    border-color: rgba(34, 197, 94, 0.4);
+}
+
+.badge-ocupado {
+    background-color: rgba(59, 130, 246, 0.12);
+    color: #1d4ed8;
+    border-color: rgba(59, 130, 246, 0.4);
+}
+
+.badge-checkin {
+    background-color: rgba(16, 185, 129, 0.12);
+    color: #0f766e;
+    border-color: rgba(16, 185, 129, 0.4);
+}
+
+.badge-mantenimiento {
+    background-color: rgba(249, 115, 22, 0.12);
+    color: #c2410c;
+    border-color: rgba(249, 115, 22, 0.4);
+}
+
+.leyenda-estado {
+    margin-top: 1rem;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+}
+
+/* Inputs y formularios */
+input[type="text"] {
+    width: 100%;
+    padding: 0.45rem 0.6rem;
+    border-radius: 0.5rem;
+    border: 1px solid var(--color-borde-suave);
+    font-size: 0.9rem;
+    outline: none;
+    transition: border-color var(--transicion-base), box-shadow var(--transicion-base);
+}
+
+input[type="text"]:focus {
+    border-color: var(--color-primario);
+    box-shadow: 0 0 0 1px rgba(11, 44, 74, 0.15);
+}
+
+label {
+    font-size: 0.85rem;
+    color: var(--color-texto-suave);
+}
+
+/* =========================================================
+   COMPONENTE: MATRIZ DE DISPONIBILIDAD
+   ========================================================= */
+
+.contenedor-disponibilidad {
+    display: flex;
+    flex-direction: column;
+    gap: 1.25rem;
+}
+
+/* Bloque por dia (en vista semana) */
+.dia-bloque {
+    border: 1px solid var(--color-borde-suave);
+    border-radius: var(--radio-borde);
+    padding: 0.75rem;
+    background-color: #ffffff;
+}
+
+.dia-bloque-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    margin-bottom: 0.5rem;
+}
+
+.dia-bloque-header h3 {
+    font-size: 1rem;
+}
+
+.dia-bloque-header span {
+    font-size: 0.8rem;
+    color: var(--color-texto-suave);
+}
+
+/* Tabla de disponibilidad con grid */
+.tabla-disponibilidad {
+    display: grid;
+    grid-template-columns: 90px repeat(4, minmax(0, 1fr));
+    border: 1px solid var(--color-borde-suave);
+    border-radius: 0.75rem;
+    overflow: hidden;
+    background-color: #f9fafb;
+}
+
+/* Celda generica */
+.celda {
+    padding: 0.4rem 0.5rem;
+    border-bottom: 1px solid #e5e7eb;
+    border-right: 1px solid #e5e7eb;
+    font-size: 0.78rem;
+}
+
+/* Ultima columna sin borde derecho */
+.tabla-disponibilidad .celda:nth-child(5n) {
+    border-right: none;
+}
+
+/* Fila header */
+.celda-header {
+    font-weight: 600;
+    background-color: #e5e7eb;
+    color: var(--color-texto);
+}
+
+/* Columna de horas */
+.celda-hora {
+    background-color: #eef2f7;
+    font-weight: 500;
+    color: var(--color-texto-suave);
+    text-align: right;
+}
+
+/* Slots de aula */
+.celda-slot {
+    cursor: pointer;
+    text-align: center;
+    transition: background-color var(--transicion-base), color var(--transicion-base), transform var(--transicion-base);
+}
+
+/* Estados de celda */
+.celda-slot.disponible {
+    background-color: #ecfdf3;
+    color: #166534;
+}
+
+.celda-slot.disponible:hover {
+    background-color: #bbf7d0;
+    transform: translateY(-1px);
+}
+
+.celda-slot.ocupado {
+    background-color: #dbeafe;
+    color: #1d4ed8;
+    cursor: default;
+}
+
+.celda-slot.checkin {
+    background-color: #ccfbf1;
+    color: #0f766e;
+    cursor: default;
+}
+
+.celda-slot.mantenimiento {
+    background-color: #fff7ed;
+    color: #c2410c;
+    cursor: not-allowed;
+    font-weight: 500;
+}
+
+/* Ultima fila sin borde inferior */
+.tabla-disponibilidad .celda:nth-last-child(-n + 5) {
+    border-bottom: none;
+}
+
+/* =========================================================
+   COMPONENTE: MODAL DE RESERVA
+   ========================================================= */
+
+.overlay {
+    position: fixed;
+    inset: 0;
+    background-color: rgba(15, 23, 42, 0.45);
+    z-index: 20;
+}
+
+.modal {
+    position: fixed;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 30;
+}
+
+.oculto {
+    display: none !important;
+}
+
+.modal-contenido {
+    width: 100%;
+    max-width: 430px;
+    background-color: #ffffff;
+    border-radius: 1rem;
+    box-shadow: 0 10px 30px rgba(15, 23, 42, 0.25);
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+}
+
+.modal-header {
+    padding: 0.9rem 1.1rem;
+    background-color: var(--color-primario);
+    color: #ffffff;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.modal-header h3 {
+    font-size: 1rem;
+}
+
+.btn-cerrar-modal {
+    border: none;
+    background: transparent;
+    color: #e5e7eb;
+    font-size: 1.3rem;
+    cursor: pointer;
+    padding: 0.1rem 0.3rem;
+    border-radius: 999px;
+    transition: background-color var(--transicion-base), color var(--transicion-base);
+}
+
+.btn-cerrar-modal:hover {
+    background-color: rgba(249, 250, 251, 0.12);
+    color: #ffffff;
+}
+
+.modal-body {
+    padding: 1rem 1.1rem 0.5rem 1.1rem;
+}
+
+.modal-footer {
+    padding: 0.7rem 1.1rem 0.9rem 1.1rem;
+    display: flex;
+    justify-content: flex-end;
+    gap: 0.6rem;
+}
+
+.form-reserva {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+}
+
+.form-grupo {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+}
+
+.form-grupo-horas {
+    display: flex;
+    gap: 0.75rem;
+}
+
+.form-grupo-horas > div {
+    flex: 1;
+}
+
+/* =========================================================
+   COMPONENTE: MIS RESERVAS
+   ========================================================= */
+
+.bloque-usuario {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    align-items: flex-end;
+    margin-bottom: 1rem;
+}
+
+.bloque-usuario label {
+    flex-basis: 100%;
+}
+
+.bloque-usuario input {
+    max-width: 220px;
+}
+
+.lista-reservas {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    gap: 0.75rem;
+}
+
+.reserva-card {
+    border: 1px solid var(--color-borde-suave);
+    border-radius: 0.8rem;
+    padding: 0.75rem 0.9rem;
+    background-color: #f9fafb;
+    display: flex;
+    flex-direction: column;
+    gap: 0.45rem;
+}
+
+.reserva-card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    gap: 0.5rem;
+}
+
+.reserva-card-header h4 {
+    font-size: 0.95rem;
+}
+
+.reserva-card-body {
+    font-size: 0.82rem;
+    color: var(--color-texto-suave);
+}
+
+.reserva-card-footer {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.4rem;
+    margin-top: 0.4rem;
+}
+
+.btn-reserva {
+    font-size: 0.8rem;
+    padding: 0.35rem 0.65rem;
+    border-radius: 999px;
+    border: 1px solid transparent;
+    background-color: #ffffff;
+    cursor: pointer;
+    transition: background-color var(--transicion-base), color var(--transicion-base), border-color var(--transicion-base);
+}
+
+.btn-reserva-cancelar {
+    border-color: var(--color-peligro);
+    color: var(--color-peligro);
+}
+
+.btn-reserva-cancelar:hover {
+    background-color: #fee2e2;
+}
+
+.btn-reserva-checkin {
+    border-color: var(--color-acento);
+    color: var(--color-acento);
+}
+
+.btn-reserva-checkin:hover {
+    background-color: #dcfce7;
+}
+
+.btn-reserva-reporte {
+    border-color: var(--color-advertencia);
+    color: var(--color-advertencia);
+}
+
+.btn-reserva-reporte:hover {
+    background-color: #fef3c7;
+}
+
+/* =========================================================
+   COMPONENTE: PANEL ADMIN
+   ========================================================= */
+
+.panel-admin {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
+    gap: 0.9rem;
+}
+
+.aula-card {
+    border: 1px solid var(--color-borde-suave);
+    border-radius: 0.9rem;
+    padding: 0.75rem 0.9rem;
+    background-color: #f9fafb;
+    display: flex;
+    flex-direction: column;
+    gap: 0.4rem;
+}
+
+.aula-card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+}
+
+.aula-card-header h3 {
+    font-size: 0.95rem;
+}
+
+.aula-card-body {
+    font-size: 0.82rem;
+    color: var(--color-texto-suave);
+}
+
+/* =========================================================
+   FOOTER
+   ========================================================= */
+
+.footer-espe {
+    text-align: center;
+    font-size: 0.75rem;
+    color: var(--color-texto-suave);
+    padding: 1rem 0 1.2rem 0;
+}
+
+/* =========================================================
+   RESPONSIVE
+   ========================================================= */
+
+@media (max-width: 768px) {
+    .layout-principal {
+        grid-template-columns: minmax(0, 1fr);
+        padding: 0 0.75rem;
+    }
+
+    .header-espe {
+        flex-direction: column;
+        text-align: center;
+    }
+
+    .tabla-disponibilidad {
+        font-size: 0.72rem;
+    }
+
+    .bloque-usuario input {
+        max-width: 100%;
+        flex: 1;
+    }
+
+    .modal-contenido {
+        margin: 0 1rem;
+    }
+}

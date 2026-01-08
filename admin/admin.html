@@ -1,0 +1,112 @@
+<!doctype html>
+<html lang="es">
+<head>
+    <meta charset="utf-8">
+    <title>Sistema de Gestión - Administrador</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="../css/estilo.css" rel="stylesheet" type="text/css">
+    <style>
+        .usuario-info {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            margin-left: auto;
+            padding: 0.5rem 1rem;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 999px;
+        }
+
+        .usuario-avatar {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            background: var(--color-advertencia);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+            font-size: 0.9rem;
+        }
+
+        .usuario-datos {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .usuario-nombre {
+            font-size: 0.85rem;
+            font-weight: 500;
+            color: white;
+        }
+
+        .usuario-rol {
+            font-size: 0.7rem;
+            color: rgba(255, 255, 255, 0.8);
+        }
+
+        .btn-logout {
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            background: transparent;
+            color: white;
+            padding: 0.25rem 0.75rem;
+            border-radius: 999px;
+            font-size: 0.8rem;
+            cursor: pointer;
+            margin-left: 0.5rem;
+            transition: all var(--transicion-base);
+        }
+
+        .btn-logout:hover {
+            background: rgba(255, 255, 255, 0.1);
+        }
+
+        /* Ocultar botones que no necesita el admin */
+        #btn-hoy, #btn-manana, #btn-semana, #btn-mis-reservas {
+            display: none !important;
+        }
+    </style>
+</head>
+<body>
+    <header class="header-espe">
+        <div class="header-logo">
+            <span class="logo-placeholder">ESPE</span>
+        </div>
+        <div class="header-textos">
+            <h1>Sistema de Gestión de Aulas de Biblioteca - Admin</h1>
+            <p>Universidad de las Fuerzas Armadas ESPE</p>
+        </div>
+        <div class="usuario-info">
+            <div class="usuario-avatar" id="avatar-usuario">A</div>
+            <div class="usuario-datos">
+                <div class="usuario-nombre" id="nombre-usuario">Administrador</div>
+                <div class="usuario-rol">Administrador</div>
+            </div>
+            <button id="btn-logout" class="btn-logout">Salir</button>
+        </div>
+    </header>
+
+    <nav class="nav-principal">
+        <button id="btn-admin" class="nav-btn nav-btn-admin">Panel de Administración</button>
+    </nav>
+
+    <main class="layout-principal">
+        <!-- Seccion de panel administrador de aulas -->
+        <section id="seccion-admin" class="seccion seccion-activa">
+            <div class="seccion-header">
+                <h2>Panel de administración de aulas</h2>
+                <p>Gestión de estados de aulas (Disponible / Mantenimiento).</p>
+            </div>
+            <div id="panel-admin-contenido" class="panel-admin">
+                <!-- Aqui se renderiza el panel admin desde admin.js -->
+            </div>
+        </section>
+    </main>
+
+    <footer class="footer-espe">
+        <p>Sistema de Gestión de Aulas de Biblioteca - Universidad de las Fuerzas Armadas ESPE</p>
+    </footer>
+
+    <script src="admin.js"></script>
+</body>
+</html>
