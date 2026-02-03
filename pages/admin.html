@@ -1,364 +1,153 @@
-	<!doctype html>
-	<html lang="es">
-	<head>
-		<meta charset="utf-8">
-		<title>Sistema de Gestión - Administrador</title>
-		<meta name="viewport" content="width=device-width, initial-scale=1.0">
-		<link href="../css/estilo.css" rel="stylesheet" type="text/css">
-		<style>
-			.usuario-info {
-				display: flex;
-				align-items: center;
-				gap: 0.75rem;
-				margin-left: auto;
-				padding: 0.5rem 1rem;
-				background: rgba(255, 255, 255, 0.1);
-				border-radius: 999px;
-			}
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <title>sistema de gestión - administrador</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link href="../css/estilo.css" rel="stylesheet" type="text/css">
+</head>
+<body>
+  <header class="header-espe">
+    <div class="header-logo">
+      <span class="logo-placeholder">ESPE</span>
+    </div>
+    <div class="header-textos">
+      <h1>sistema de gestión de aulas de biblioteca - admin</h1>
+      <p>universidad de las fuerzas armadas espe</p>
+    </div>
 
-			.usuario-avatar {
-				width: 32px;
-				height: 32px;
-				border-radius: 50%;
-				background: var(--color-advertencia);
-				display: flex;
-				align-items: center;
-				justify-content: center;
-				color: white;
-				font-weight: bold;
-				font-size: 0.9rem;
-			}
+    <div class="usuario-info">
+      <div class="usuario-avatar" id="avatar-usuario">A</div>
+      <div class="usuario-datos">
+        <div class="usuario-nombre" id="nombre-usuario">administrador</div>
+        <div class="usuario-rol">administrador</div>
+      </div>
+      <button id="btn-logout" class="btn-logout">salir</button>
+    </div>
+  </header>
 
-			.usuario-datos {
-				display: flex;
-				flex-direction: column;
-			}
+  <nav class="nav-principal">
+    <button id="btn-hoy" class="nav-btn">hoy</button>
+    <button id="btn-manana" class="nav-btn">mañana</button>
+    <button id="btn-semana" class="nav-btn">semana completa</button>
+    <button id="btn-crear-aula" class="nav-btn nav-btn-crear">+ crear aula</button>
+    <button id="btn-reportes" class="nav-btn nav-btn-reportes">reportes</button>
+    <button id="btn-admin" class="nav-btn nav-btn-admin">panel admin</button>
+  </nav>
 
-			.usuario-nombre {
-				font-size: 0.85rem;
-				font-weight: 500;
-				color: white;
-			}
+  <main class="layout-principal">
+    <section id="seccion-disponibilidad" class="seccion seccion-activa">
+      <div class="seccion-header">
+        <h2>disponibilidad de aulas</h2>
+        <p id="texto-filtro-actual" class="texto-filtro">vista: hoy</p>
+      </div>
+      <div id="grid-disponibilidad" class="contenedor-disponibilidad"></div>
+      <div class="leyenda-estado">
+        <span class="badge badge-disponible">disponible</span>
+        <span class="badge badge-ocupado">reservado</span>
+        <span class="badge badge-checkin">check-in</span>
+        <span class="badge badge-mantenimiento">mantenimiento</span>
+      </div>
+    </section>
 
-			.usuario-rol {
-				font-size: 0.7rem;
-				color: rgba(255, 255, 255, 0.8);
-			}
+    <section id="seccion-crear-aula" class="seccion seccion-oculta">
+      <div class="seccion-header">
+        <h2>crear nueva aula</h2>
+        <p>agregar un nuevo aula al sistema</p>
+      </div>
 
-			.btn-logout {
-				border: 1px solid rgba(255, 255, 255, 0.3);
-				background: transparent;
-				color: white;
-				padding: 0.25rem 0.75rem;
-				border-radius: 999px;
-				font-size: 0.8rem;
-				cursor: pointer;
-				margin-left: 0.5rem;
-				transition: all var(--transicion-base);
-			}
+      <div class="form-crear-aula">
+        <div class="grid-form-aula">
+          <div class="form-grupo">
+            <label for="input-nombre-aula">nombre del aula:</label>
+            <input type="text" id="input-nombre-aula" placeholder="ej: aula 101" required>
+          </div>
+          <div class="form-grupo">
+            <label for="input-capacidad">capacidad:</label>
+            <input type="number" id="input-capacidad" placeholder="ej: 30" min="1" required>
+          </div>
+          <div class="form-grupo">
+            <label for="input-equipamiento">equipamiento:</label>
+            <input type="text" id="input-equipamiento" placeholder="proyector, pizarra, etc.">
+          </div>
+          <div class="form-grupo">
+            <label for="select-estado-inicial">estado inicial:</label>
+            <select id="select-estado-inicial" class="select-estado">
+              <option value="disponible">disponible</option>
+              <option value="mantenimiento">mantenimiento</option>
+            </select>
+          </div>
+        </div>
+        <button id="btn-guardar-aula" class="btn-primario">guardar aula</button>
+      </div>
 
-			.btn-logout:hover {
-				background: rgba(255, 255, 255, 0.1);
-			}
+      <div class="seccion-header">
+        <h3>aulas existentes</h3>
+        <p>lista de aulas en el sistema</p>
+      </div>
+      <div id="panel-admin-contenido" class="panel-admin"></div>
+    </section>
 
-			/* Estilos específicos para admin */
-			.nav-btn-crear {
-				border-color: var(--color-acento);
-				color: var(--color-acento);
-			}
+    <section id="seccion-reportes" class="seccion seccion-oculta">
+      <div class="seccion-header">
+        <h2>reportes de uso indebido</h2>
+        <p>gestión de quejas y reportes de usuarios</p>
+      </div>
 
-			.nav-btn-crear:hover {
-				background-color: var(--color-acento);
-				color: white;
-			}
+      <div class="panel-estadisticas">
+        <div class="estadistica-card">
+          <div class="estadistica-valor" id="total-reportes">0</div>
+          <div class="estadistica-label">reportes totales</div>
+        </div>
+        <div class="estadistica-card">
+          <div class="estadistica-valor" id="reportes-pendientes">0</div>
+          <div class="estadistica-label">pendientes</div>
+        </div>
+        <div class="estadistica-card">
+          <div class="estadistica-valor" id="reportes-resueltos">0</div>
+          <div class="estadistica-label">resueltos</div>
+        </div>
+      </div>
 
-			.nav-btn-reportes {
-				border-color: var(--color-peligro);
-				color: var(--color-peligro);
-			}
+      <div class="lista-reportes" id="lista-reportes"></div>
+    </section>
 
-			.nav-btn-reportes:hover {
-				background-color: var(--color-peligro);
-				color: white;
-			}
+    <section id="seccion-admin-panel" class="seccion seccion-oculta">
+      <div class="seccion-header">
+        <h2>panel de administración de aulas</h2>
+        <p>gestión de estados de aulas (disponible / mantenimiento).</p>
+      </div>
+      <div id="panel-admin-aulas" class="panel-admin"></div>
+    </section>
+  </main>
 
-			.form-crear-aula {
-				background: #f9fafb;
-				padding: 1.25rem;
-				border-radius: var(--radio-borde);
-				border: 1px solid var(--color-borde-suave);
-				margin-bottom: 1.5rem;
-			}
+  <div id="overlay-modal" class="overlay oculto"></div>
+  <div id="modal-confirmacion" class="modal oculto">
+    <div class="modal-contenido">
+      <div class="modal-header">
+        <h3 id="modal-titulo">confirmación</h3>
+        <button id="btn-cerrar-modal" class="btn-cerrar-modal">×</button>
+      </div>
+      <div class="modal-body">
+        <p id="modal-mensaje">¿está seguro de realizar esta acción?</p>
+      </div>
+      <div class="modal-footer">
+        <button id="btn-confirmar-accion" class="btn-primario">confirmar</button>
+        <button id="btn-cancelar-accion" class="btn-secundario">cancelar</button>
+      </div>
+    </div>
+  </div>
 
-			.grid-form-aula {
-				display: grid;
-				grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-				gap: 1rem;
-				margin-bottom: 1rem;
-			}
+  <script type="module">
+    import { requireAuth, startIdleLogout } from "../js/guard.js";
+    const me = await requireAuth(["admin"]);
+    if (!me) location.href = "../index.html";
+    startIdleLogout(3);
 
-			.lista-reportes {
-				max-height: 400px;
-				overflow-y: auto;
-				border: 1px solid var(--color-borde-suave);
-				border-radius: var(--radio-borde);
-			}
-
-			.reporte-item {
-				padding: 1rem;
-				border-bottom: 1px solid var(--color-borde-suave);
-				background: white;
-			}
-
-			.reporte-item:last-child {
-				border-bottom: none;
-			}
-
-			.reporte-header {
-				display: flex;
-				justify-content: space-between;
-				align-items: flex-start;
-				margin-bottom: 0.5rem;
-			}
-
-			.reporte-usuario {
-				font-weight: 600;
-				color: var(--color-primario);
-			}
-
-			.reporte-fecha {
-				font-size: 0.8rem;
-				color: var(--color-texto-suave);
-			}
-
-			.reporte-aula {
-				display: inline-block;
-				background: var(--color-secundario);
-				padding: 0.2rem 0.5rem;
-				border-radius: 999px;
-				font-size: 0.8rem;
-				margin-bottom: 0.5rem;
-			}
-
-			.reporte-mensaje {
-				font-size: 0.9rem;
-				line-height: 1.4;
-			}
-
-			.estado-reporte {
-				display: inline-block;
-				padding: 0.2rem 0.6rem;
-				border-radius: 999px;
-				font-size: 0.75rem;
-				font-weight: 500;
-			}
-
-			.estado-pendiente {
-				background: #fef3c7;
-				color: #92400e;
-			}
-
-			.estado-resuelto {
-				background: #d1fae5;
-				color: #065f46;
-			}
-
-			.acciones-reporte {
-				display: flex;
-				gap: 0.5rem;
-				margin-top: 0.75rem;
-			}
-
-			.btn-accion-pequeno {
-				padding: 0.3rem 0.7rem;
-				font-size: 0.8rem;
-				border-radius: 0.5rem;
-			}
-
-			/* Panel de estadísticas */
-			.panel-estadisticas {
-				display: grid;
-				grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-				gap: 1rem;
-				margin-bottom: 1.5rem;
-			}
-
-			.estadistica-card {
-				background: white;
-				border: 1px solid var(--color-borde-suave);
-				border-radius: var(--radio-borde);
-				padding: 1rem;
-				text-align: center;
-			}
-
-			.estadistica-valor {
-				font-size: 2rem;
-				font-weight: 700;
-				color: var(--color-primario);
-				margin: 0.5rem 0;
-			}
-
-			.estadistica-label {
-				font-size: 0.85rem;
-				color: var(--color-texto-suave);
-			}
-
-			/* Select personalizado */
-			.select-estado {
-				width: 100%;
-				padding: 0.45rem 0.6rem;
-				border-radius: 0.5rem;
-				border: 1px solid var(--color-borde-suave);
-				font-size: 0.9rem;
-				background-color: white;
-				cursor: pointer;
-			}
-		</style>
-	</head>
-	<body>
-		<header class="header-espe">
-			<div class="header-logo">
-				<span class="logo-placeholder">ESPE</span>
-			</div>
-			<div class="header-textos">
-				<h1>Sistema de Gestión de Aulas de Biblioteca - Admin</h1>
-				<p>Universidad de las Fuerzas Armadas ESPE</p>
-			</div>
-			<div class="usuario-info">
-				<div class="usuario-avatar" id="avatar-usuario">A</div>
-				<div class="usuario-datos">
-					<div class="usuario-nombre" id="nombre-usuario">Administrador</div>
-					<div class="usuario-rol">Administrador</div>
-				</div>
-				<button id="btn-logout" class="btn-logout">Salir</button>
-			</div>
-		</header>
-
-		<nav class="nav-principal">
-			<button id="btn-hoy" class="nav-btn">Hoy</button>
-			<button id="btn-manana" class="nav-btn">Mañana</button>
-			<button id="btn-semana" class="nav-btn">Semana completa</button>
-			<button id="btn-crear-aula" class="nav-btn nav-btn-crear">+ Crear Aula</button>
-			<button id="btn-reportes" class="nav-btn nav-btn-reportes">Reportes</button>
-			<button id="btn-admin" class="nav-btn nav-btn-admin">Panel Admin</button>
-		</nav>
-
-		<main class="layout-principal">
-			<!-- Sección de disponibilidad (como usuario) -->
-			<section id="seccion-disponibilidad" class="seccion seccion-activa">
-				<div class="seccion-header">
-					<h2>Disponibilidad de aulas</h2>
-					<p id="texto-filtro-actual" class="texto-filtro">Vista: Hoy</p>
-				</div>
-				<div id="grid-disponibilidad" class="contenedor-disponibilidad">
-					<!-- Aquí se renderiza la matriz horaria -->
-				</div>
-				<div class="leyenda-estado">
-					<span class="badge badge-disponible">Disponible</span>
-					<span class="badge badge-ocupado">Reservado</span>
-					<span class="badge badge-checkin">Check-in</span>
-					<span class="badge badge-mantenimiento">Mantenimiento</span>
-				</div>
-			</section>
-
-			<!-- Sección para crear aulas nuevas -->
-			<section id="seccion-crear-aula" class="seccion seccion-oculta">
-				<div class="seccion-header">
-					<h2>Crear nueva aula</h2>
-					<p>Agregar un nuevo aula al sistema</p>
-				</div>
-
-				<div class="form-crear-aula">
-					<div class="grid-form-aula">
-						<div class="form-grupo">
-							<label for="input-nombre-aula">Nombre del aula:</label>
-							<input type="text" id="input-nombre-aula" placeholder="Ej: Aula 101" required>
-						</div>
-						<div class="form-grupo">
-							<label for="input-capacidad">Capacidad:</label>
-							<input type="number" id="input-capacidad" placeholder="Ej: 30" min="1" required>
-						</div>
-						<div class="form-grupo">
-							<label for="input-equipamiento">Equipamiento:</label>
-							<input type="text" id="input-equipamiento" placeholder="Proyector, Pizarra, etc.">
-						</div>
-						<div class="form-grupo">
-							<label for="select-estado-inicial">Estado inicial:</label>
-							<select id="select-estado-inicial" class="select-estado">
-								<option value="Disponible">Disponible</option>
-								<option value="Mantenimiento">Mantenimiento</option>
-							</select>
-						</div>
-					</div>
-					<button id="btn-guardar-aula" class="btn-primario">Guardar aula</button>
-				</div>
-
-				<div class="seccion-header">
-					<h3>Aulas existentes</h3>
-					<p>Lista de aulas en el sistema</p>
-				</div>
-				<div id="panel-admin-contenido" class="panel-admin">
-					<!-- Aquí se renderiza el panel admin desde admin.js -->
-				</div>
-			</section>
-
-			<!-- Sección de reportes/quejas -->
-			<section id="seccion-reportes" class="seccion seccion-oculta">
-				<div class="seccion-header">
-					<h2>Reportes de uso indebido</h2>
-					<p>Gestión de quejas y reportes de usuarios</p>
-				</div>
-
-				<div class="panel-estadisticas">
-					<div class="estadistica-card">
-						<div class="estadistica-valor" id="total-reportes">0</div>
-						<div class="estadistica-label">Reportes totales</div>
-					</div>
-					<div class="estadistica-card">
-						<div class="estadistica-valor" id="reportes-pendientes">0</div>
-						<div class="estadistica-label">Pendientes</div>
-					</div>
-					<div class="estadistica-card">
-						<div class="estadistica-valor" id="reportes-resueltos">0</div>
-						<div class="estadistica-label">Resueltos</div>
-					</div>
-				</div>
-
-				<div class="lista-reportes" id="lista-reportes">
-					<!-- Reportes se cargarán dinámicamente desde JS -->
-				</div>
-			</section>
-
-			<!-- Sección de administración de aulas -->
-			<section id="seccion-admin-panel" class="seccion seccion-oculta">
-				<div class="seccion-header">
-					<h2>Panel de administración de aulas</h2>
-					<p>Gestión de estados de aulas (Disponible / Mantenimiento).</p>
-				</div>
-				<div id="panel-admin-aulas" class="panel-admin">
-					<!-- Aquí se renderiza el panel admin desde admin.js -->
-				</div>
-			</section>
-		</main>
-
-		<!-- Modal para confirmaciones -->
-		<div id="overlay-modal" class="overlay oculto"></div>
-		<div id="modal-confirmacion" class="modal oculto">
-			<div class="modal-contenido">
-				<div class="modal-header">
-					<h3 id="modal-titulo">Confirmación</h3>
-					<button id="btn-cerrar-modal" class="btn-cerrar-modal">×</button>
-				</div>
-				<div class="modal-body">
-					<p id="modal-mensaje">¿Está seguro de realizar esta acción?</p>
-				</div>
-				<div class="modal-footer">
-					<button id="btn-confirmar-accion" class="btn-primario">Confirmar</button>
-					<button id="btn-cancelar-accion" class="btn-secundario">Cancelar</button>
-				</div>
-			</div>
-		</div>
-
-		<script src="../js/admin.js"></script>
-	</body>
-	</html>
+    const s = document.createElement("script");
+    s.src = "../js/admin.js";
+    s.defer = true;
+    document.body.appendChild(s);
+  </script>
+</body>
+</html>

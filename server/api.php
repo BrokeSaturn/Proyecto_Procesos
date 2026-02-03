@@ -3,18 +3,57 @@ require_once __DIR__ . "/conexion.php";
 require_once __DIR__ . "/util.php";
 require_once __DIR__ . "/auditoria.php";
 
-if (session_status() !== PHP_SESSION_ACTIVE) session_start();
+header("Cache-Control: no-store, no-cache, must-revalidate, max-age=0");
+header("Pragma: no-cache");
+header("Expires: 0");
+
+if (session_status() !== PHP_SESSION_ACTIVE) {
+  $p = session_get_cookie_params();
+  session_set_cookie_params([
+    "lifetime" => 0,
+    "path" => "/",
+    "domain" => $p["domain"] ?? "",
+    "secure" => false,
+    "httponly" => true,
+    "samesite" => "Lax",
+  ]);
+  session_start();
+}
 
 $action = $_GET["action"] ?? "";
 $d = body_json();
 
 function me() { return $_SESSION["me"] ?? null; }
+
+function force_logout_401($msg = "sesion expirada") {
+  $_SESSION = [];
+  if (ini_get("session.use_cookies")) {
+    $p = session_get_cookie_params();
+    setcookie(session_name(), "", time() - 42000, $p["path"], $p["domain"], $p["secure"], $p["httponly"]);
+  }
+  session_destroy();
+  json_out(["ok"=>false,"error"=>$msg], 401);
+}
+
+function touch_idle() {
+  $limit = 180; // 3 minutos
+  $now = time();
+  $last = intval($_SESSION["last_activity"] ?? 0);
+  if ($last > 0 && ($now - $last) > $limit) {
+    force_logout_401("sesion expirada por inactividad");
+  }
+  $_SESSION["last_activity"] = $now;
+}
+
 function require_login() {
   if (empty($_SESSION["me"])) json_out(["ok"=>false,"error"=>"no autenticado"], 401);
+  touch_idle();
 }
+
 function require_role($roles) {
   $m = me();
   if (!$m) json_out(["ok"=>false,"error"=>"no autenticado"], 401);
+  touch_idle();
   $rol = strtolower($m["rol"]);
   $roles = array_map("strtolower", $roles);
   if (!in_array($rol, $roles, true)) json_out(["ok"=>false,"error"=>"sin permisos"], 403);
@@ -55,12 +94,28 @@ function seed_admin_encargado() {
 }
 seed_admin_encargado();
 
+/* ========= me ========= */
+if ($action === "me") {
+  if (empty($_SESSION["me"])) json_out(["ok"=>false,"error"=>"no autenticado"], 401);
+  touch_idle();
+  json_out(["ok"=>true,"me"=>$_SESSION["me"]]);
+}
+
 /* ========= auth ========= */
 if ($action === "login") {
   global $enlace;
 
-  $miss = require_fields($d, ["nombre_usuario"]);
-  if ($miss) json_out(["ok"=>false,"error"=>"falta nombre_usuario"], 400);
+  $now = time();
+  $_SESSION["login_tries"] = $_SESSION["login_tries"] ?? 0;
+  $_SESSION["login_lock_until"] = $_SESSION["login_lock_until"] ?? 0;
+
+  if ($now < intval($_SESSION["login_lock_until"])) {
+    $secs = intval($_SESSION["login_lock_until"]) - $now;
+    json_out(["ok"=>false,"error"=>"demasiados intentos. espera ".$secs." segundos"], 429);
+  }
+
+  $miss = require_fields($d, ["nombre_usuario","password"]);
+  if ($miss) json_out(["ok"=>false,"error"=>"falta ".$miss], 400);
 
   $u = trim($d["nombre_usuario"]);
   $p = (string)($d["password"] ?? "");
@@ -76,16 +131,29 @@ if ($action === "login") {
   $res = mysqli_stmt_get_result($st);
   $row = mysqli_fetch_assoc($res);
 
-  if (!$row || intval($row["activo"]) !== 1) json_out(["ok"=>false,"error"=>"usuario no válido"], 401);
-
-  $rol = strtolower($row["rol"]);
-  $hash = $row["password_hash"];
-
-  if ($rol === "admin" || $rol === "encargado") {
-    if (!$hash || !password_verify($p, $hash)) json_out(["ok"=>false,"error"=>"credenciales incorrectas"], 401);
-  } else {
-    if ($hash && !password_verify($p, $hash)) json_out(["ok"=>false,"error"=>"credenciales incorrectas"], 401);
+  $valido = false;
+  if ($row && intval($row["activo"]) === 1) {
+    $hash = $row["password_hash"];
+    if ($hash && password_verify($p, $hash)) $valido = true;
   }
+
+  if (!$valido) {
+    $_SESSION["login_tries"] = intval($_SESSION["login_tries"]) + 1;
+    $left = 3 - intval($_SESSION["login_tries"]);
+
+    if ($left <= 0) {
+      $_SESSION["login_lock_until"] = $now + 300;
+      $_SESSION["login_tries"] = 0;
+      json_out(["ok"=>false,"error"=>"demasiados intentos. bloqueado 5 minutos"], 429);
+    }
+
+    json_out(["ok"=>false,"error"=>"credenciales incorrectas. intentos restantes: ".$left], 401);
+  }
+
+  $_SESSION["login_tries"] = 0;
+  $_SESSION["login_lock_until"] = 0;
+
+  session_regenerate_id(true);
 
   $_SESSION["me"] = [
     "id" => intval($row["id"]),
@@ -94,6 +162,7 @@ if ($action === "login") {
     "apellidos" => $row["apellidos"],
     "rol" => $row["rol"]
   ];
+  $_SESSION["last_activity"] = time();
 
   audit_log($_SESSION["me"]["id"], "login", "usuarios", $_SESSION["me"]["id"], ["rol"=>$row["rol"]]);
   json_out(["ok"=>true, "me"=>$_SESSION["me"]]);
@@ -102,6 +171,12 @@ if ($action === "login") {
 if ($action === "logout") {
   $m = me();
   if ($m) audit_log($m["id"], "logout", "usuarios", $m["id"], null);
+
+  $_SESSION = [];
+  if (ini_get("session.use_cookies")) {
+    $p = session_get_cookie_params();
+    setcookie(session_name(), "", time() - 42000, $p["path"], $p["domain"], $p["secure"], $p["httponly"]);
+  }
   session_destroy();
   json_out(["ok"=>true]);
 }
@@ -127,9 +202,7 @@ if ($action === "register") {
   $sql = "INSERT INTO usuarios(nombres,apellidos,nombre_usuario,cedula,correo,telefono,password_hash,rol_id,activo)
           VALUES(?,?,?,?,?,?,?,?,1)";
   $st = mysqli_prepare($enlace, $sql);
-  mysqli_stmt_bind_param(
-    $st,
-    "sssssssi",
+  mysqli_stmt_bind_param($st,"sssssssi",
     $d["nombres"], $d["apellidos"], $d["nombre_usuario"], $ced, $correo, $d["telefono"], $hash, $rol_id
   );
 

@@ -5,6 +5,9 @@
   <title>login - sistema espe</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <link href="css/login.css" rel="stylesheet" type="text/css" />
+  <meta http-equiv="Cache-Control" content="no-store, no-cache, must-revalidate, max-age=0" />
+  <meta http-equiv="Pragma" content="no-cache" />
+  <meta http-equiv="Expires" content="0" />
 </head>
 
 <body class="login-container">
@@ -18,50 +21,27 @@
     <div class="login-card">
       <h2>iniciar sesión</h2>
 
-      <form id="form-login">
+      <form id="form-login" autocomplete="off">
         <div class="form-grupo-login">
-          <label for="input-nombre">nombre:</label>
-          <input
-            type="text"
-            id="input-nombre"
-            class="login-input"
-            placeholder="ingrese su nombre"
-            required
-          />
-          <div id="error-nombre" class="error-mensaje" style="display:none;">
-            por favor ingrese su nombre
-          </div>
+          <label for="input-usuario">usuario:</label>
+          <input id="input-usuario" type="text" class="login-input" placeholder="ej: admin" required />
+          <div id="error-usuario" class="error-mensaje" style="display:none;"></div>
         </div>
 
         <div class="form-grupo-login">
-          <label>seleccione su rol:</label>
-          <div class="rol-selector">
-            <div class="rol-option" data-rol="usuario">
-              <div class="rol-icon">usr</div>
-              <div class="rol-titulo">usuario</div>
-              <div class="rol-descripcion">reservar aulas</div>
-            </div>
-
-            <div class="rol-option" data-rol="admin">
-              <div class="rol-icon">adm</div>
-              <div class="rol-titulo">administrador</div>
-              <div class="rol-descripcion">gestionar aulas</div>
-            </div>
-          </div>
-
-          <div class="rol-option" data-rol="encargado">
-             <div class="rol-icon">enc</div>
-             <div class="rol-titulo">encargado</div>
-             <div class="rol-descripcion">reportes y check-in</div>
-         </div>
-
-          <div id="error-rol" class="error-mensaje" style="display:none;">
-            por favor seleccione un rol
-          </div>
+          <label for="input-password">contraseña:</label>
+          <input id="input-password" type="password" class="login-input" placeholder="ingrese su contraseña" required />
+          <div id="error-password" class="error-mensaje" style="display:none;"></div>
         </div>
 
-        <button type="submit" class="btn-login">ingresar al sistema</button>
+        <div id="error-general" class="error-mensaje" style="display:none;"></div>
+
+        <button type="submit" class="btn-login" id="btn-login">ingresar</button>
       </form>
+
+      <div style="margin-top:10px;text-align:center;">
+        <a href="pages/registro.html" style="color:inherit;text-decoration:underline;">crear cuenta</a>
+      </div>
     </div>
   </main>
 
