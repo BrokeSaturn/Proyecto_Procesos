@@ -1,0 +1,219 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8" />
+  <title>sistema de gestión de aulas - encargado</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <link href="../css/estilo.css" rel="stylesheet" type="text/css" />
+
+  <style>
+    .usuario-info{display:flex;align-items:center;gap:.75rem;margin-left:auto;padding:.5rem 1rem;background:rgba(255,255,255,.1);border-radius:999px}
+    .usuario-avatar{width:32px;height:32px;border-radius:50%;background:var(--color-acento);display:flex;align-items:center;justify-content:center;color:#fff;font-weight:700;font-size:.9rem}
+    .usuario-datos{display:flex;flex-direction:column}
+    .usuario-nombre{font-size:.85rem;font-weight:500;color:#fff}
+    .usuario-rol{font-size:.7rem;color:rgba(255,255,255,.85)}
+    .btn-logout{border:1px solid rgba(255,255,255,.3);background:transparent;color:#fff;padding:.25rem .75rem;border-radius:999px;font-size:.8rem;cursor:pointer;margin-left:.5rem;transition:all var(--transicion-base)}
+    .btn-logout:hover{background:rgba(255,255,255,.1)}
+
+    .grid-2{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:1rem}
+    .card-mini{background:#fff;border:1px solid var(--color-borde-suave);border-radius:var(--radio-borde);padding:1rem}
+    .valor{font-size:2rem;font-weight:700;color:var(--color-primario);margin:.25rem 0}
+
+    .input-linea{display:flex;flex-wrap:wrap;gap:.6rem;align-items:end;margin-top:.75rem}
+    .input-linea .form-grupo{flex:1;min-width:220px}
+
+    .tabla-simple{width:100%;border-collapse:collapse;border:1px solid var(--color-borde-suave);border-radius:var(--radio-borde);overflow:hidden}
+    .tabla-simple th,.tabla-simple td{padding:.65rem .75rem;border-bottom:1px solid var(--color-borde-suave);text-align:left;font-size:.9rem}
+    .tabla-simple th{background:#f9fafb}
+
+    .badge-mini{display:inline-block;padding:.15rem .55rem;border-radius:999px;font-size:.75rem;border:1px solid var(--color-borde-suave);background:#fff}
+    .badge-pendiente{border-color:var(--color-advertencia);color:var(--color-advertencia)}
+    .badge-resuelto{border-color:var(--color-acento);color:var(--color-acento)}
+    .acciones{display:flex;flex-wrap:wrap;gap:.4rem}
+
+    .grupo-dia{margin:1rem 0;border:1px solid var(--color-borde-suave);border-radius:var(--radio-borde);overflow:hidden;background:#fff}
+    .grupo-dia h3{margin:0;padding:.75rem 1rem;background:#f9fafb;border-bottom:1px solid var(--color-borde-suave);font-size:1rem}
+    .nota{padding:.75rem 1rem;color:#64748b}
+  </style>
+</head>
+
+<body>
+  <header class="header-espe">
+    <div class="header-logo">
+      <span class="logo-placeholder">espe</span>
+    </div>
+
+    <div class="header-textos">
+      <h1>sistema de gestión de aulas de biblioteca - encargado</h1>
+      <p>universidad de las fuerzas armadas espe</p>
+    </div>
+
+    <div class="usuario-info">
+      <div class="usuario-avatar" id="avatar-usuario">e</div>
+      <div class="usuario-datos">
+        <div class="usuario-nombre" id="nombre-usuario">encargado</div>
+        <div class="usuario-rol">encargado</div>
+      </div>
+      <button id="btn-logout" class="btn-logout">salir</button>
+    </div>
+  </header>
+
+  <nav class="nav-principal">
+    <button id="btn-inicio" class="nav-btn">inicio</button>
+    <button id="btn-horarios" class="nav-btn">horarios</button>
+    <button id="btn-reportes" class="nav-btn nav-btn-admin">reportes</button>
+    <button id="btn-checkin" class="nav-btn nav-btn-secundario">validar check-in</button>
+    <button id="btn-multas" class="nav-btn">multas</button>
+  </nav>
+
+  <main class="layout-principal">
+    <section id="seccion-inicio" class="seccion seccion-activa">
+      <div class="seccion-header">
+        <h2>panel del encargado</h2>
+        <p class="texto-filtro">gestión de reportes, check-in y multas</p>
+      </div>
+
+      <div class="grid-2">
+        <div class="card-mini">
+          <div>reportes totales</div>
+          <div class="valor" id="kpi-reportes-total">0</div>
+          <div class="texto-filtro">incluye pendientes y resueltos</div>
+        </div>
+
+        <div class="card-mini">
+          <div>pendientes</div>
+          <div class="valor" id="kpi-reportes-pend">0</div>
+          <div class="texto-filtro">por revisar / sancionar</div>
+        </div>
+
+        <div class="card-mini">
+          <div>multas emitidas</div>
+          <div class="valor" id="kpi-multas">0</div>
+          <div class="texto-filtro">historial de sanciones</div>
+        </div>
+
+        <div class="card-mini">
+          <div>check-ins validados</div>
+          <div class="valor" id="kpi-checkins">0</div>
+          <div class="texto-filtro">validaciones realizadas</div>
+        </div>
+      </div>
+    </section>
+
+    <section id="seccion-horarios" class="seccion seccion-oculta">
+      <div class="seccion-header">
+        <h2>horarios</h2>
+        <p class="texto-filtro">hoy, mañana o toda la semana con filtro por aula</p>
+      </div>
+
+      <div class="input-linea">
+        <div class="form-grupo">
+          <label for="vista-horarios">vista:</label>
+          <select id="vista-horarios" class="select-estado">
+            <option value="hoy">hoy</option>
+            <option value="manana">mañana</option>
+            <option value="semana">toda la semana</option>
+          </select>
+        </div>
+
+        <div class="form-grupo">
+          <label for="filtro-aula-horarios">aula:</label>
+          <select id="filtro-aula-horarios" class="select-estado"></select>
+        </div>
+
+        <button id="btn-refrescar-horarios" class="btn-primario">refrescar</button>
+      </div>
+
+      <div style="margin-top:1rem;">
+        <div id="contenedor-horarios"></div>
+      </div>
+    </section>
+
+    <section id="seccion-reportes" class="seccion seccion-oculta">
+      <div class="seccion-header">
+        <h2>reportes de uso indebido</h2>
+        <p class="texto-filtro">revisar, marcar resuelto y emitir multas</p>
+      </div>
+
+      <div class="input-linea">
+        <div class="form-grupo">
+          <label for="filtro-estado">estado:</label>
+          <select id="filtro-estado" class="select-estado">
+            <option value="todos">todos</option>
+            <option value="pendiente">pendiente</option>
+            <option value="resuelto">resuelto</option>
+          </select>
+        </div>
+
+        <div class="form-grupo">
+          <label for="filtro-texto">buscar:</label>
+          <input id="filtro-texto" type="text" placeholder="usuario, aula, mensaje..." />
+        </div>
+
+        <button id="btn-refrescar-reportes" class="btn-primario">refrescar</button>
+      </div>
+
+      <div style="margin-top:1rem;">
+        <table class="tabla-simple">
+          <thead>
+            <tr>
+              <th>fecha</th>
+              <th>usuario</th>
+              <th>aula</th>
+              <th>gravedad</th>
+              <th>estado</th>
+              <th>acciones</th>
+            </tr>
+          </thead>
+          <tbody id="tbody-reportes"></tbody>
+        </table>
+      </div>
+    </section>
+
+    <section id="seccion-checkin" class="seccion seccion-oculta">
+      <div class="seccion-header">
+        <h2>validar check-in</h2>
+        <p class="texto-filtro">ingresa el código del usuario para validar entrada</p>
+      </div>
+
+      <div class="input-linea">
+        <div class="form-grupo">
+          <label for="input-codigo-checkin">código:</label>
+          <input id="input-codigo-checkin" type="text" placeholder="ej: 8k2f-19qx" />
+        </div>
+        <button id="btn-validar-checkin" class="btn-primario">validar</button>
+      </div>
+
+      <div id="resultado-checkin" style="margin-top:1rem;"></div>
+    </section>
+
+    <section id="seccion-multas" class="seccion seccion-oculta">
+      <div class="seccion-header">
+        <h2>multas</h2>
+        <p class="texto-filtro">historial de sanciones emitidas</p>
+      </div>
+
+      <div style="margin-top:0.5rem;">
+        <table class="tabla-simple">
+          <thead>
+            <tr>
+              <th>fecha</th>
+              <th>usuario</th>
+              <th>motivo</th>
+              <th>gravedad</th>
+              <th>monto</th>
+            </tr>
+          </thead>
+          <tbody id="tbody-multas"></tbody>
+        </table>
+      </div>
+    </section>
+  </main>
+
+  <footer class="footer-espe">
+    <p>sistema de gestión de aulas de biblioteca - universidad de las fuerzas armadas espe</p>
+  </footer>
+
+  <script src="../js/encargado.js" defer></script>
+</body>
+</html>

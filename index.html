@@ -1,60 +1,74 @@
 <!doctype html>
 <html lang="es">
 <head>
-    <meta charset="utf-8">
-    <title>Login - Sistema ESPE</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link href="login/login.css" rel="stylesheet" type="text/css">
+  <meta charset="utf-8" />
+  <title>login - sistema espe</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <link href="css/login.css" rel="stylesheet" type="text/css" />
 </head>
+
 <body class="login-container">
-    <header class="login-header">
-        <div class="login-logo">ESPE</div>
-        <h1>Sistema de Gestión de Aulas de Biblioteca</h1>
-        <p>Universidad de las Fuerzas Armadas ESPE</p>
-    </header>
+  <header class="login-header">
+    <div class="login-logo">espe</div>
+    <h1>sistema de gestión de aulas de biblioteca</h1>
+    <p>universidad de las fuerzas armadas espe</p>
+  </header>
 
-    <main class="login-main">
-        <div class="login-card">
-            <h2>Iniciar Sesión</h2>
-            
-            <form id="form-login">
-                <div class="form-grupo-login">
-                    <label for="input-nombre">Nombre:</label>
-                    <input type="text" id="input-nombre" class="login-input" 
-                           placeholder="Ingrese su nombre" required>
-                    <div id="error-nombre" class="error-mensaje">
-                        Por favor ingrese su nombre
-                    </div>
-                </div>
+  <main class="login-main">
+    <div class="login-card">
+      <h2>iniciar sesión</h2>
 
-                <div class="form-grupo-login">
-                    <label>Seleccione su rol:</label>
-                    <div class="rol-selector">
-                        <div class="rol-option" data-rol="usuario">
-                            <div class="rol-icon">👤</div>
-                            <div class="rol-titulo">Usuario</div>
-                            <div class="rol-descripcion">Reservar aulas</div>
-                        </div>
-                        <div class="rol-option" data-rol="admin">
-                            <div class="rol-icon">⚙️</div>
-                            <div class="rol-titulo">Administrador</div>
-                            <div class="rol-descripcion">Gestionar aulas</div>
-                        </div>
-                    </div>
-                    <div id="error-rol" class="error-mensaje">
-                        Por favor seleccione un rol
-                    </div>
-                </div>
-
-                <button type="submit" class="btn-login">Ingresar al Sistema</button>
-            </form>
+      <form id="form-login">
+        <div class="form-grupo-login">
+          <label for="input-nombre">nombre:</label>
+          <input
+            type="text"
+            id="input-nombre"
+            class="login-input"
+            placeholder="ingrese su nombre"
+            required
+          />
+          <div id="error-nombre" class="error-mensaje" style="display:none;">
+            por favor ingrese su nombre
+          </div>
         </div>
-    </main>
 
-    <footer class="login-footer">
-        <p>Sistema de Gestión de Aulas de Biblioteca - Universidad de las Fuerzas Armadas ESPE</p>
-    </footer>
+        <div class="form-grupo-login">
+          <label>seleccione su rol:</label>
+          <div class="rol-selector">
+            <div class="rol-option" data-rol="usuario">
+              <div class="rol-icon">usr</div>
+              <div class="rol-titulo">usuario</div>
+              <div class="rol-descripcion">reservar aulas</div>
+            </div>
 
-    <script src="login/login.js"></script>
+            <div class="rol-option" data-rol="admin">
+              <div class="rol-icon">adm</div>
+              <div class="rol-titulo">administrador</div>
+              <div class="rol-descripcion">gestionar aulas</div>
+            </div>
+          </div>
+
+          <div class="rol-option" data-rol="encargado">
+             <div class="rol-icon">enc</div>
+             <div class="rol-titulo">encargado</div>
+             <div class="rol-descripcion">reportes y check-in</div>
+         </div>
+
+          <div id="error-rol" class="error-mensaje" style="display:none;">
+            por favor seleccione un rol
+          </div>
+        </div>
+
+        <button type="submit" class="btn-login">ingresar al sistema</button>
+      </form>
+    </div>
+  </main>
+
+  <footer class="login-footer">
+    <p>sistema de gestión de aulas de biblioteca - universidad de las fuerzas armadas espe</p>
+  </footer>
+
+  <script src="js/login.js" defer></script>
 </body>
 </html>
