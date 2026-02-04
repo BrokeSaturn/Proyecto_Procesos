@@ -247,7 +247,6 @@ if ($action === "reservas_list") {
     $where = "WHERE r.usuario_id=".(int)$_SESSION["usuario_id"];
   }
 
-  // IMPORTANTE: devolvemos campos que esperan usuario.js/encargado.js
   $sql = "SELECT r.id, r.usuario_id, r.aula_id, r.franja_id,
                  r.fecha, r.estado, r.codigo_checkin, r.checkin_validado,
                  a.codigo AS aula_codigo, a.nombre AS aula_nombre,
@@ -262,7 +261,7 @@ if ($action === "reservas_list") {
   $rs = mysqli_query($enlace, $sql);
   $rows = [];
   while ($r = mysqli_fetch_assoc($rs)) {
-    $r["aula"] = $r["aula_codigo"]; // compat
+    $r["aula"] = $r["aula_codigo"];
     $rows[] = $r;
   }
   json_out(["ok" => true, "reservas" => $rows]);
@@ -280,7 +279,6 @@ if ($action === "reservas_create") {
     json_out(["ok"=>false,"error"=>"datos inválidos"], 400);
   }
 
-  // aula existe y no está en mantenimiento
   $st = mysqli_prepare($enlace, "SELECT estado FROM aulas WHERE id=? LIMIT 1");
   mysqli_stmt_bind_param($st, "i", $aula_id);
   mysqli_stmt_execute($st);
@@ -293,7 +291,6 @@ if ($action === "reservas_create") {
     json_out(["ok"=>false,"error"=>"aula en mantenimiento"], 400);
   }
 
-  // franja existe?
   $st = mysqli_prepare($enlace, "SELECT id FROM franjas WHERE id=? LIMIT 1");
   mysqli_stmt_bind_param($st, "i", $franja_id);
   mysqli_stmt_execute($st);
@@ -302,7 +299,6 @@ if ($action === "reservas_create") {
   mysqli_stmt_close($st);
   if (!$f) json_out(["ok"=>false,"error"=>"franja no existe"], 400);
 
-  // ya reservado ese slot?
   $sql = "SELECT id FROM reservas
           WHERE aula_id=? AND franja_id=? AND fecha=? AND estado <> 'cancelada'
           LIMIT 1";
@@ -314,19 +310,19 @@ if ($action === "reservas_create") {
   mysqli_stmt_close($st);
   if ($ex) json_out(["ok"=>false,"error"=>"ya está reservado"], 400);
 
-  // insertar
   $codigo = gen_checkin_code(4);
   $uid = (int)$_SESSION["usuario_id"];
 
   $sql = "INSERT INTO reservas(usuario_id,aula_id,fecha,franja_id,estado,codigo_checkin)
           VALUES(?,?,?,?, 'activa', ?)";
   $st = mysqli_prepare($enlace, $sql);
-  mysqli_stmt_bind_param($st, "iiiss", $uid, $aula_id, $fecha, $franja_id, $codigo);
+
+  // ✅ fix: tipos correctos (fecha es string)
+  mysqli_stmt_bind_param($st, "iisis", $uid, $aula_id, $fecha, $franja_id, $codigo);
 
   if (!mysqli_stmt_execute($st)) {
     $err = mysqli_error($enlace);
     mysqli_stmt_close($st);
-    // aquí cae el trigger de max 3 por semana
     json_out(["ok"=>false,"error"=>$err ?: "no se pudo reservar"], 400);
   }
 
@@ -349,7 +345,6 @@ if ($action === "reservas_cancel") {
   $rol = strtolower((string)($_SESSION["rol"] ?? ""));
   $uid = (int)$_SESSION["usuario_id"];
 
-  // solo dueño o admin/encargado
   $st = mysqli_prepare($enlace, "SELECT usuario_id, estado FROM reservas WHERE id=? LIMIT 1");
   mysqli_stmt_bind_param($st, "i", $id);
   mysqli_stmt_execute($st);
@@ -430,7 +425,6 @@ if ($action === "reportes_create") {
     json_out(["ok"=>false,"error"=>"datos inválidos"], 400);
   }
 
-  // aula existe?
   $st = mysqli_prepare($enlace, "SELECT id FROM aulas WHERE id=? LIMIT 1");
   mysqli_stmt_bind_param($st, "i", $aula_id);
   mysqli_stmt_execute($st);
@@ -440,13 +434,24 @@ if ($action === "reportes_create") {
   if (!$a) json_out(["ok"=>false,"error"=>"aula no existe"], 400);
 
   $uid = (int)$_SESSION["usuario_id"];
-  $reserva_id = (int)($d["reserva_id"] ?? 0);
-  if ($reserva_id < 1) $reserva_id = null;
+  $reserva_id_raw = $d["reserva_id"] ?? null;
+  $reserva_id = null;
+  if ($reserva_id_raw !== null && $reserva_id_raw !== "") {
+    $reserva_id = (int)$reserva_id_raw;
+    if ($reserva_id < 1) $reserva_id = null;
+  }
 
-  $sql = "INSERT INTO reportes(reportante_id,reserva_id,aula_id,descripcion,gravedad,estado)
-          VALUES(?,?,?,?,?,'pendiente')";
-  $st = mysqli_prepare($enlace, $sql);
-  mysqli_stmt_bind_param($st, "iiiss", $uid, $reserva_id, $aula_id, $descripcion, $gravedad);
+  if ($reserva_id === null) {
+    $sql = "INSERT INTO reportes(reportante_id,reserva_id,aula_id,descripcion,gravedad,estado)
+            VALUES(?,NULL,?,?,?,'pendiente')";
+    $st = mysqli_prepare($enlace, $sql);
+    mysqli_stmt_bind_param($st, "iiss", $uid, $aula_id, $descripcion, $gravedad);
+  } else {
+    $sql = "INSERT INTO reportes(reportante_id,reserva_id,aula_id,descripcion,gravedad,estado)
+            VALUES(?,?,?,?,?,'pendiente')";
+    $st = mysqli_prepare($enlace, $sql);
+    mysqli_stmt_bind_param($st, "iiiss", $uid, $reserva_id, $aula_id, $descripcion, $gravedad);
+  }
 
   if (!mysqli_stmt_execute($st)) {
     $err = mysqli_error($enlace);
@@ -572,7 +577,6 @@ if ($action === "multas_create") {
     json_out(["ok"=>false,"error"=>"datos inválidos"], 400);
   }
 
-  // reporte existe?
   $st = mysqli_prepare($enlace, "SELECT id FROM reportes WHERE id=? LIMIT 1");
   mysqli_stmt_bind_param($st, "i", $reporte_id);
   mysqli_stmt_execute($st);
