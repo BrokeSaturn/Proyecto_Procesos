@@ -8,9 +8,7 @@
 </head>
 <body>
   <header class="header-espe">
-    <div class="header-logo">
-      <span class="logo-placeholder">ESPE</span>
-    </div>
+    <div class="header-logo"><span class="logo-placeholder">ESPE</span></div>
     <div class="header-textos">
       <h1>sistema de gestión de aulas de biblioteca - admin</h1>
       <p>universidad de las fuerzas armadas espe</p>
@@ -20,7 +18,7 @@
       <div class="usuario-avatar" id="avatar-usuario">A</div>
       <div class="usuario-datos">
         <div class="usuario-nombre" id="nombre-usuario">administrador</div>
-        <div class="usuario-rol">administrador</div>
+        <div class="usuario-rol" id="rol-usuario">administrador</div>
       </div>
       <button id="btn-logout" class="btn-logout">salir</button>
     </div>
@@ -41,7 +39,9 @@
         <h2>disponibilidad de aulas</h2>
         <p id="texto-filtro-actual" class="texto-filtro">vista: hoy</p>
       </div>
+
       <div id="grid-disponibilidad" class="contenedor-disponibilidad"></div>
+
       <div class="leyenda-estado">
         <span class="badge badge-disponible">disponible</span>
         <span class="badge badge-ocupado">reservado</span>
@@ -65,10 +65,6 @@
           <div class="form-grupo">
             <label for="input-capacidad">capacidad:</label>
             <input type="number" id="input-capacidad" placeholder="ej: 30" min="1" required>
-          </div>
-          <div class="form-grupo">
-            <label for="input-equipamiento">equipamiento:</label>
-            <input type="text" id="input-equipamiento" placeholder="proyector, pizarra, etc.">
           </div>
           <div class="form-grupo">
             <label for="select-estado-inicial">estado inicial:</label>
@@ -120,23 +116,6 @@
       <div id="panel-admin-aulas" class="panel-admin"></div>
     </section>
   </main>
-
-  <div id="overlay-modal" class="overlay oculto"></div>
-  <div id="modal-confirmacion" class="modal oculto">
-    <div class="modal-contenido">
-      <div class="modal-header">
-        <h3 id="modal-titulo">confirmación</h3>
-        <button id="btn-cerrar-modal" class="btn-cerrar-modal">×</button>
-      </div>
-      <div class="modal-body">
-        <p id="modal-mensaje">¿está seguro de realizar esta acción?</p>
-      </div>
-      <div class="modal-footer">
-        <button id="btn-confirmar-accion" class="btn-primario">confirmar</button>
-        <button id="btn-cancelar-accion" class="btn-secundario">cancelar</button>
-      </div>
-    </div>
-  </div>
 
   <script type="module">
     import { requireAuth, startIdleLogout } from "../js/guard.js";

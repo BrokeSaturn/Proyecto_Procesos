@@ -1,15 +1,20 @@
 <?php
-function json_out($arr, $code = 200) {
-  http_response_code($code);
-  header("Content-Type: application/json; charset=utf-8");
-  echo json_encode($arr);
-  exit;
+
+if (!function_exists("json_out")) {
+  function json_out($arr, $code = 200) {
+    http_response_code($code);
+    header("Content-Type: application/json; charset=utf-8");
+    echo json_encode($arr, JSON_UNESCAPED_UNICODE);
+    exit;
+  }
 }
 
-function body_json() {
-  $raw = file_get_contents("php://input");
-  $d = json_decode($raw, true);
-  return is_array($d) ? $d : [];
+if (!function_exists("body_json")) {
+  function body_json() {
+    $raw = file_get_contents("php://input");
+    $d = json_decode($raw, true);
+    return is_array($d) ? $d : [];
+  }
 }
 
 function require_fields($d, $fields) {
@@ -55,4 +60,36 @@ function gen_checkin_code($len = 4) {
     return $s;
   };
   return $part() . "-" . $part();
+}
+
+/**
+ * ✅ auditoria: usa actor_id (NO usuario_id)
+ * tabla auditoria: actor_id, accion, tabla, registro_id, detalle
+ */
+function audit_log($enlace, $actorId, $accion, $tabla, $registroId = null, $detalleArr = null) {
+  if (!$enlace) return;
+
+  $actorId = ($actorId !== null) ? (int)$actorId : null;
+  $accion = (string)$accion;
+  $tabla = (string)$tabla;
+
+  $reg = ($registroId === null) ? null : (int)$registroId;
+
+  $detalleJson = null;
+  if (is_array($detalleArr) || is_object($detalleArr)) {
+    $detalleJson = json_encode($detalleArr, JSON_UNESCAPED_UNICODE);
+  } elseif (is_string($detalleArr) && $detalleArr !== "") {
+    $detalleJson = $detalleArr;
+  }
+
+  $sql = "INSERT INTO auditoria (actor_id, accion, tabla, registro_id, detalle)
+          VALUES (?, ?, ?, ?, ?)";
+
+  $st = mysqli_prepare($enlace, $sql);
+  if (!$st) return;
+
+  // i = actor_id, s = accion, s = tabla, i = registro_id, s = detalle
+  mysqli_stmt_bind_param($st, "issis", $actorId, $accion, $tabla, $reg, $detalleJson);
+  @mysqli_stmt_execute($st);
+  mysqli_stmt_close($st);
 }

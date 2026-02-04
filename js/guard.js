@@ -21,9 +21,7 @@ export async function requireAuth(rolesPermitidos = []) {
 
   const text = await res.text();
   let data = null;
-  try {
-    data = JSON.parse(text);
-  } catch {
+  try { data = JSON.parse(text); } catch {
     window.location.href = new URL("../index.html", window.location.href).toString();
     return null;
   }
@@ -50,36 +48,27 @@ export async function requireAuth(rolesPermitidos = []) {
   return me;
 }
 
-export function startIdleLogout(minutes = 3) {
-  const ms = Math.max(1, minutes) * 60 * 1000;
-
-  const logoutUrl = new URL("../server/api.php", window.location.href);
-  logoutUrl.searchParams.set("action", "logout");
-
-  const goIndex = () => {
-    window.location.href = new URL("../index.html", window.location.href).toString();
-  };
-
+export function startIdleLogout(minutos = 3) {
+  const ms = Math.max(1, minutos) * 60 * 1000;
   let t = null;
 
-  const reset = () => {
-    if (t) clearTimeout(t);
-    t = setTimeout(async () => {
-      try {
-        await fetch(logoutUrl.toString(), {
-          method: "POST",
-          credentials: "include",
-          headers: { "Content-Type": "application/json", Accept: "application/json" },
-          body: "{}",
-        });
-      } catch {}
-      goIndex();
-    }, ms);
-  };
+  async function logoutNow() {
+    try {
+      const url = new URL("../server/api.php", window.location.href);
+      url.searchParams.set("action", "logout");
+      await fetch(url.toString(), { method: "POST", credentials: "include" });
+    } catch {}
+    window.location.href = new URL("../index.html", window.location.href).toString();
+  }
 
-  ["mousemove","mousedown","keydown","scroll","touchstart","click"].forEach((ev) => {
-    window.addEventListener(ev, reset, { passive: true });
-  });
+  function reset() {
+    if (t) clearTimeout(t);
+    t = setTimeout(logoutNow, ms);
+  }
+
+  ["mousemove", "mousedown", "keydown", "scroll", "touchstart"].forEach((ev) =>
+    window.addEventListener(ev, reset, { passive: true })
+  );
 
   reset();
 }
