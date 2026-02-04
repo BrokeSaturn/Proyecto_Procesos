@@ -14,6 +14,7 @@
     });
 
     if (res.status === 401) return null;
+
     const data = await res.json().catch(() => null);
     if (!data || !data.ok) throw new Error((data && data.error) || "error");
     return data;
@@ -27,10 +28,12 @@
       method: "POST",
       headers: { "Content-Type": "application/json", Accept: "application/json" },
       credentials: "include",
+      cache: "no-store",
       body: JSON.stringify(body || {}),
     });
 
     if (res.status === 401) return null;
+
     const data = await res.json().catch(() => null);
     if (!data || !data.ok) throw new Error((data && data.error) || "error");
     return data;
@@ -52,32 +55,17 @@
     return `${y}-${m}-${day}`;
   }
 
-  function addDays(iso, n) {
-    const [y, m, d] = iso.split("-").map(Number);
-    const dt = new Date(y, m - 1, d);
-    dt.setDate(dt.getDate() + n);
-    return dateISO(dt);
-  }
-
-  function startOfWeekMonday(iso) {
-    const [y, m, d] = iso.split("-").map(Number);
-    const dt = new Date(y, m - 1, d);
-    const dow = (dt.getDay() + 6) % 7; // lunes=0
-    dt.setDate(dt.getDate() - dow);
-    return dateISO(dt);
-  }
-
   function nombreDiaES(iso) {
     const [y, m, d] = iso.split("-").map(Number);
     const dt = new Date(y, m - 1, d);
-    const dias = ["domingo","lunes","martes","miércoles","jueves","viernes","sábado"];
+    const dias = ["domingo", "lunes", "martes", "miércoles", "jueves", "viernes", "sábado"];
     return dias[dt.getDay()];
   }
 
   function setUserUI(me) {
     const nombre = $("#nombre-usuario");
     const avatar = $("#avatar-usuario");
-    const rol = $("#rol-usuario");
+    const rol = $("#rol-usuario") || $(".usuario-rol");
 
     const full = `${me.nombres || ""} ${me.apellidos || ""}`.trim() || me.nombre_usuario || "usuario";
     if (nombre) nombre.textContent = full;
@@ -86,7 +74,9 @@
   }
 
   async function doLogout() {
-    try { await apiPOST("logout", {}); } catch {}
+    try {
+      await apiPOST("logout", {});
+    } catch {}
     window.location.href = "../index.html";
   }
 
@@ -99,197 +89,195 @@
     ids.forEach((x) => {
       const el = $("#" + x);
       if (!el) return;
-      el.classList.toggle("seccion-activa", x === id);
-      el.classList.toggle("seccion-oculta", x !== id);
+      const on = x === id;
+      el.classList.toggle("seccion-activa", on);
+      el.classList.toggle("seccion-oculta", !on);
     });
   }
 
   function bindNav() {
     $("#btn-inicio")?.addEventListener("click", () => showSection("seccion-inicio"));
+
     $("#btn-horarios")?.addEventListener("click", async () => {
       showSection("seccion-horarios");
-      await renderHorarios();
+      await renderDisponibilidadHoy();
     });
+
     $("#btn-reportes")?.addEventListener("click", async () => {
       showSection("seccion-reportes");
       await loadReportesTable();
     });
+
     $("#btn-checkin")?.addEventListener("click", () => showSection("seccion-checkin"));
+
     $("#btn-multas")?.addEventListener("click", async () => {
       showSection("seccion-multas");
-      await loadMultasTable();
+      await loadMultasTableSafe();
     });
   }
 
-  // ===== MODAL RESERVA =====
-  let reservaPendiente = null;
-
-  function openModal({ aula, franja, fechaISO }) {
-    reservaPendiente = { aula_id: Number(aula.id), franja_id: Number(franja.id), fecha: fechaISO };
-
-    $("#input-aula").value = aula.codigo;
-    $("#input-fecha").value = fechaISO;
-    $("#input-hora-inicio").value = String(franja.hora_inicio || "").slice(0,5);
-    $("#input-hora-fin").value = String(franja.hora_fin || "").slice(0,5);
-
-    $("#overlay-modal")?.classList.remove("oculto");
-    $("#modal-reserva")?.classList.remove("oculto");
-  }
-
-  function closeModal() {
-    $("#overlay-modal")?.classList.add("oculto");
-    $("#modal-reserva")?.classList.add("oculto");
-    reservaPendiente = null;
-  }
-
-  function bindModal() {
-    $("#overlay-modal")?.addEventListener("click", closeModal);
-    $("#btn-cerrar-modal")?.addEventListener("click", closeModal);
-    $("#btn-cancelar-modal")?.addEventListener("click", closeModal);
-
-    $("#btn-confirmar-reserva")?.addEventListener("click", async () => {
-      if (!reservaPendiente) return;
-      try {
-        const r = await apiPOST("reservas_create", reservaPendiente);
-        alert("reserva creada. código: " + (r.codigo_checkin || ""));
-        closeModal();
-        await renderHorarios();
-      } catch (e) {
-        alert(e.message || "error");
-      }
-    });
-  }
-
-  // ===== HORARIOS MEJORADOS (GRID) =====
-  function getVistaHorarios() {
-    const v = ($("#vista-horarios")?.value || "hoy").toLowerCase();
-    if (v === "manana" || v === "mañana") return "manana";
-    if (v === "semana") return "semana";
-    return "hoy";
-  }
-
-  function rangoVista(vista) {
-    const hoy = dateISO(new Date());
-    if (vista === "hoy") return { from: hoy, to: hoy, days: [hoy] };
-    if (vista === "manana") {
-      const m = addDays(hoy, 1);
-      return { from: m, to: m, days: [m] };
+  // =========================
+  // kpis (robusto: no rompe si falta multas/checkins)
+  // =========================
+  async function loadKpisSafe() {
+    try {
+      const rep = await apiGET("reportes_list");
+      const reportes = rep?.reportes || [];
+      const total = reportes.length;
+      const pend = reportes.filter((r) => String(r.estado).toLowerCase() !== "resuelto").length;
+      if ($("#kpi-reportes-total")) $("#kpi-reportes-total").textContent = String(total);
+      if ($("#kpi-reportes-pend")) $("#kpi-reportes-pend").textContent = String(pend);
+    } catch {
+      if ($("#kpi-reportes-total")) $("#kpi-reportes-total").textContent = "0";
+      if ($("#kpi-reportes-pend")) $("#kpi-reportes-pend").textContent = "0";
     }
-    const start = startOfWeekMonday(hoy);
-    const days = [0,1,2,3,4].map((i) => addDays(start, i)); // lunes-viernes
-    return { from: days[0], to: days[days.length - 1], days };
+
+    // checkins: depende de reservas_list scope=all
+    try {
+      const rr = await apiGET("reservas_list", { scope: "all" });
+      const reservas = rr?.reservas || [];
+      const checkins = reservas.filter((x) => Number(x.checkin_validado) === 1).length;
+      if ($("#kpi-checkins")) $("#kpi-checkins").textContent = String(checkins);
+    } catch {
+      if ($("#kpi-checkins")) $("#kpi-checkins").textContent = "0";
+    }
+
+    // multas: si no existe endpoint, no rompe
+    try {
+      const m = await apiGET("multas_list");
+      const rows = m?.multas || [];
+      if ($("#kpi-multas")) $("#kpi-multas").textContent = String(rows.length);
+    } catch {
+      if ($("#kpi-multas")) $("#kpi-multas").textContent = "0";
+    }
   }
 
+  // =========================
+  // disponibilidad (solo hoy, igual admin)
+  // =========================
   function buildReservaIndex(reservas) {
-    const map = new Map();
+    const map = new Map(); // fecha|aula_id|franja_id
     (reservas || []).forEach((r) => {
-      const k = `${r.fecha}|${r.aula_id}|${r.franja_id}`;
-      map.set(k, r);
+      map.set(`${r.fecha}|${r.aula_id}|${r.franja_id}`, r);
     });
     return map;
   }
 
-  async function renderHorarios() {
-    const cont = $("#contenedor-horarios");
+  function getAulaFilterId() {
+    return Number($("#filtro-aula-horarios")?.value || 0);
+  }
+
+  async function renderDisponibilidadHoy() {
+    const cont = $("#grid-disponibilidad");
     if (!cont) return;
+
+    const hoy = dateISO(new Date());
+
+    const p = $("#texto-filtro-actual");
+    if (p) p.textContent = `vista: hoy (${hoy})`;
 
     cont.innerHTML = "cargando...";
 
-    const vista = getVistaHorarios();
-    const aulaId = Number($("#filtro-aula-horarios")?.value || 0);
-
-    const { from, to, days } = rangoVista(vista);
-    const data = await apiGET("disponibilidad", { from, to });
+    const data = await apiGET("disponibilidad", { from: hoy, to: hoy });
 
     let aulas = data.aulas || [];
     const franjas = data.franjas || [];
     const idx = buildReservaIndex(data.reservas || []);
+    const aulaFiltro = getAulaFilterId();
 
-    if (aulaId) aulas = aulas.filter((a) => Number(a.id) === aulaId);
+    if (aulaFiltro) aulas = aulas.filter((a) => Number(a.id) === aulaFiltro);
 
     if (aulas.length === 0) {
       cont.innerHTML = "<p style='padding:1rem;'>no hay aulas para mostrar</p>";
       return;
     }
     if (franjas.length === 0) {
-      cont.innerHTML = "<p style='padding:1rem;'>no hay franjas (horarios) en la base</p>";
+      cont.innerHTML = "<p style='padding:1rem;'>no hay franjas en la base</p>";
       return;
     }
 
     cont.innerHTML = "";
 
-    days.forEach((diaISO) => {
-      const bloque = document.createElement("div");
-      bloque.className = "dia-bloque";
+    const diaISO = hoy;
 
-      const header = document.createElement("div");
-      header.className = "dia-bloque-header";
-      header.innerHTML = `<h3>${nombreDiaES(diaISO)}</h3><span>${diaISO}</span>`;
-      bloque.appendChild(header);
+    const bloque = document.createElement("div");
+    bloque.className = "dia-bloque";
 
-      const grid = document.createElement("div");
-      grid.className = "tabla-disponibilidad";
-      grid.style.gridTemplateColumns = `110px repeat(${aulas.length}, minmax(140px, 1fr))`;
+    const header = document.createElement("div");
+    header.className = "dia-bloque-header";
 
-      const hHora = document.createElement("div");
-      hHora.className = "celda celda-header";
-      hHora.textContent = "hora";
-      grid.appendChild(hHora);
+    const h3 = document.createElement("h3");
+    h3.textContent = nombreDiaES(diaISO);
+
+    const span = document.createElement("span");
+    span.textContent = diaISO;
+
+    header.appendChild(h3);
+    header.appendChild(span);
+    bloque.appendChild(header);
+
+    const grid = document.createElement("div");
+    grid.className = "tabla-disponibilidad";
+    grid.style.gridTemplateColumns = `110px repeat(${aulas.length}, minmax(140px, 1fr))`;
+
+    const hHora = document.createElement("div");
+    hHora.className = "celda celda-header";
+    hHora.textContent = "hora";
+    grid.appendChild(hHora);
+
+    aulas.forEach((a) => {
+      const hA = document.createElement("div");
+      hA.className = "celda celda-header";
+      hA.textContent = a.codigo;
+      grid.appendChild(hA);
+    });
+
+    franjas.forEach((f) => {
+      const label = String(f.hora_inicio || "").slice(0, 5);
+
+      const cHora = document.createElement("div");
+      cHora.className = "celda celda-hora";
+      cHora.textContent = label;
+      grid.appendChild(cHora);
 
       aulas.forEach((a) => {
-        const hA = document.createElement("div");
-        hA.className = "celda celda-header";
-        hA.textContent = a.codigo;
-        grid.appendChild(hA);
-      });
+        const cell = document.createElement("div");
+        cell.className = "celda celda-slot";
 
-      franjas.forEach((f) => {
-        const label = String(f.hora_inicio || "").slice(0, 5);
-
-        const cHora = document.createElement("div");
-        cHora.className = "celda celda-hora";
-        cHora.textContent = label;
-        grid.appendChild(cHora);
-
-        aulas.forEach((a) => {
-          const cell = document.createElement("div");
-          cell.className = "celda celda-slot";
-
-          const estadoAula = String(a.estado || "").toLowerCase();
-          if (estadoAula === "mantenimiento") {
-            cell.classList.add("mantenimiento");
-            cell.textContent = "mantenimiento";
-            grid.appendChild(cell);
-            return;
-          }
-
-          const k = `${diaISO}|${a.id}|${f.id}`;
-          const r = idx.get(k);
-
-          if (r) {
-            const checkin = Number(r.checkin_validado || 0) === 1;
-            if (checkin) {
-              cell.classList.add("checkin");
-              cell.textContent = "check-in";
-            } else {
-              cell.classList.add("ocupado");
-              cell.textContent = "reservado";
-            }
-            cell.title = `usuario: ${r.usuario || ""}`;
-          } else {
-            cell.classList.add("disponible");
-            cell.textContent = "disponible";
-            cell.style.cursor = "pointer";
-            cell.addEventListener("click", () => openModal({ aula: a, franja: f, fechaISO: diaISO }));
-          }
-
+        const estadoAula = String(a.estado || "").toLowerCase();
+        if (estadoAula === "mantenimiento") {
+          cell.classList.add("mantenimiento");
+          cell.textContent = "mantenimiento";
           grid.appendChild(cell);
-        });
-      });
+          return;
+        }
 
-      bloque.appendChild(grid);
-      cont.appendChild(bloque);
+        const k = `${diaISO}|${a.id}|${f.id}`;
+        const r = idx.get(k);
+
+        if (r) {
+          const checkin = Number(r.checkin_validado || 0) === 1;
+          if (checkin) {
+            cell.classList.add("checkin");
+            cell.textContent = "check-in";
+          } else {
+            cell.classList.add("ocupado");
+            cell.textContent = "reservado";
+          }
+          // tooltip útil
+          const u = r.usuario ? `usuario: ${r.usuario}` : "";
+          cell.title = [u, r.codigo_checkin ? `código: ${r.codigo_checkin}` : ""].filter(Boolean).join("\n");
+        } else {
+          cell.classList.add("disponible");
+          cell.textContent = "disponible";
+        }
+
+        grid.appendChild(cell);
+      });
     });
+
+    bloque.appendChild(grid);
+    cont.appendChild(bloque);
   }
 
   async function loadAulasForFiltro() {
@@ -298,37 +286,15 @@
 
     const r = await apiGET("aulas_list");
     const aulas = r.aulas || [];
+
     sel.innerHTML =
       `<option value="0">todas</option>` +
       aulas.map((a) => `<option value="${a.id}">${escapeHtml(a.nombre)} (${escapeHtml(a.codigo)})</option>`).join("");
   }
 
-  // ===== KPIs =====
-  async function loadKpis() {
-    try {
-      const rep = await apiGET("reportes_list");
-      const reportes = rep?.reportes || [];
-      const total = reportes.length;
-      const pend = reportes.filter((r) => String(r.estado).toLowerCase() !== "resuelto").length;
-
-      $("#kpi-reportes-total") && ($("#kpi-reportes-total").textContent = String(total));
-      $("#kpi-reportes-pend") && ($("#kpi-reportes-pend").textContent = String(pend));
-
-      const multas = await apiGET("multas_list").catch(() => ({ multas: [] }));
-      $("#kpi-multas") && ($("#kpi-multas").textContent = String((multas.multas || []).length));
-
-      const rr = await apiGET("reservas_list", { scope: "all" }).catch(() => ({ reservas: [] }));
-      const checkins = (rr.reservas || []).filter((x) => Number(x.checkin_validado) === 1).length;
-      $("#kpi-checkins") && ($("#kpi-checkins").textContent = String(checkins));
-    } catch {
-      $("#kpi-reportes-total") && ($("#kpi-reportes-total").textContent = "0");
-      $("#kpi-reportes-pend") && ($("#kpi-reportes-pend").textContent = "0");
-      $("#kpi-multas") && ($("#kpi-multas").textContent = "0");
-      $("#kpi-checkins") && ($("#kpi-checkins").textContent = "0");
-    }
-  }
-
-  // ===== REPORTES =====
+  // =========================
+  // reportes (mejorados pero simples)
+  // =========================
   function badgeEstado(estado) {
     const s = String(estado || "").toLowerCase();
     if (s === "resuelto") return `<span class="badge-mini badge-resuelto">resuelto</span>`;
@@ -339,7 +305,9 @@
     const tbody = $("#tbody-reportes");
     if (!tbody) return;
 
-    const filtroEstado = ($("#filtro-estado")?.value || "todos").toLowerCase();
+    tbody.innerHTML = `<tr><td colspan="6" class="nota">cargando...</td></tr>`;
+
+    const filtroEstado = $("#filtro-estado")?.value || "todos";
     const filtroTexto = ($("#filtro-texto")?.value || "").trim().toLowerCase();
 
     const r = await apiGET("reportes_list");
@@ -355,31 +323,40 @@
       });
     }
 
-    tbody.innerHTML = rows.map((x) => {
-      const estado = String(x.estado || "").toLowerCase();
-      const acciones =
-        estado === "resuelto"
-          ? `<span class="texto-filtro">—</span>`
-          : `<button class="btn-primario btn-accion-pequeno" data-res="${x.id}">resolver</button>`;
-      return `
-        <tr>
-          <td>${escapeHtml(x.fecha)}</td>
-          <td>${escapeHtml(x.reportante)}</td>
-          <td>${escapeHtml(x.aula)}</td>
-          <td>${escapeHtml(x.gravedad)}</td>
-          <td>${badgeEstado(x.estado)}</td>
-          <td>${acciones}</td>
-        </tr>
-      `;
-    }).join("");
+    if (rows.length === 0) {
+      tbody.innerHTML = `<tr><td colspan="6" class="nota">sin reportes</td></tr>`;
+      return;
+    }
+
+    tbody.innerHTML = rows
+      .map((x) => {
+        const estado = String(x.estado || "").toLowerCase();
+        const acciones =
+          estado === "resuelto"
+            ? `<span class="texto-filtro">—</span>`
+            : `<div class="acciones">
+                 <button class="btn-primario btn-accion-pequeno" data-res="${x.id}">resolver</button>
+               </div>`;
+
+        return `
+          <tr>
+            <td>${escapeHtml(x.fecha)}</td>
+            <td>${escapeHtml(x.reportante)}</td>
+            <td>${escapeHtml(x.aula)}</td>
+            <td>${escapeHtml(x.gravedad)}</td>
+            <td>${badgeEstado(x.estado)}</td>
+            <td>${acciones}</td>
+          </tr>
+        `;
+      })
+      .join("");
 
     tbody.querySelectorAll("[data-res]").forEach((b) => {
       b.addEventListener("click", async () => {
         const id = Number(b.getAttribute("data-res"));
         try {
           await apiPOST("reportes_resolver", { id });
-          await loadKpis();
-          await loadReportesTable();
+          await refreshAll();
         } catch (e) {
           alert(e.message || "error");
         }
@@ -387,28 +364,9 @@
     });
   }
 
-  // ===== MULTAS =====
-  async function loadMultasTable() {
-    const tbody = $("#tbody-multas");
-    if (!tbody) return [];
-
-    const r = await apiGET("multas_list");
-    const rows = r.multas || [];
-
-    tbody.innerHTML = rows.map((m) => `
-      <tr>
-        <td>${escapeHtml(m.fecha)}</td>
-        <td>${escapeHtml(m.usuario)}</td>
-        <td>${escapeHtml(m.motivo)}</td>
-        <td>${escapeHtml(m.gravedad)}</td>
-        <td>${escapeHtml(m.monto)}</td>
-      </tr>
-    `).join("");
-
-    return rows;
-  }
-
-  // ===== CHECKIN =====
+  // =========================
+  // check-in (si existe endpoint)
+  // =========================
   async function validateCheckin() {
     const input = $("#input-codigo-checkin");
     const box = $("#resultado-checkin");
@@ -426,10 +384,10 @@
         ? `<p class="nota">ya estaba validado</p>`
         : `<p class="nota">validado correctamente</p>`;
       input.value = "";
-      await loadKpis();
-      await renderHorarios();
+      await refreshAll();
     } catch (e) {
-      box.innerHTML = `<p class="nota">${escapeHtml(e.message || "error")}</p>`;
+      // si el endpoint no existe, no rompemos la app
+      box.innerHTML = `<p class="nota">${escapeHtml(e.message || "no disponible")}</p>`;
     }
   }
 
@@ -440,6 +398,41 @@
     });
   }
 
+  // =========================
+  // multas (safe: si no existe endpoint)
+  // =========================
+  async function loadMultasTableSafe() {
+    const tbody = $("#tbody-multas");
+    if (!tbody) return;
+
+    try {
+      const r = await apiGET("multas_list");
+      const rows = r.multas || [];
+      if (rows.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="5" class="nota">sin multas</td></tr>`;
+        return;
+      }
+      tbody.innerHTML = rows
+        .map(
+          (m) => `
+        <tr>
+          <td>${escapeHtml(m.fecha)}</td>
+          <td>${escapeHtml(m.usuario)}</td>
+          <td>${escapeHtml(m.motivo)}</td>
+          <td>${escapeHtml(m.gravedad)}</td>
+          <td>${escapeHtml(m.monto)}</td>
+        </tr>
+      `
+        )
+        .join("");
+    } catch {
+      tbody.innerHTML = `<tr><td colspan="5" class="nota">módulo de multas no implementado en api.php</td></tr>`;
+    }
+  }
+
+  // =========================
+  // filtros
+  // =========================
   function bindFilters() {
     $("#btn-refrescar-reportes")?.addEventListener("click", loadReportesTable);
     $("#filtro-estado")?.addEventListener("change", loadReportesTable);
@@ -448,9 +441,17 @@
       bindFilters._t = setTimeout(loadReportesTable, 250);
     });
 
-    $("#btn-refrescar-horarios")?.addEventListener("click", renderHorarios);
-    $("#vista-horarios")?.addEventListener("change", renderHorarios);
-    $("#filtro-aula-horarios")?.addEventListener("change", renderHorarios);
+    $("#btn-refrescar-horarios")?.addEventListener("click", renderDisponibilidadHoy);
+    $("#filtro-aula-horarios")?.addEventListener("change", renderDisponibilidadHoy);
+  }
+
+  async function refreshAll() {
+    await Promise.allSettled([
+      loadKpisSafe(),
+      loadReportesTable(),
+      loadMultasTableSafe(),
+      renderDisponibilidadHoy(),
+    ]);
   }
 
   async function init() {
@@ -463,19 +464,15 @@
     setUserUI(meRes.me);
     bindLogout();
     bindNav();
-    bindModal();
     bindCheckin();
     bindFilters();
 
     await loadAulasForFiltro();
-    await loadKpis();
 
-    showSection("seccion-horarios");
-    await renderHorarios();
+    // arranque: panel inicio
+    showSection("seccion-inicio");
+    await refreshAll();
   }
 
-  init().catch((e) => {
-    alert(e.message || "error");
-    window.location.href = "../index.html";
-  });
+  init().catch(() => (window.location.href = "../index.html"));
 })();

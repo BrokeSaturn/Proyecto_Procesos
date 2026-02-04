@@ -50,14 +50,19 @@ function fetch_me_db($enlace, $id) {
   return $me ?: null;
 }
 
-function is_date_iso($s) {
-  return (bool)preg_match('/^\d{4}-\d{2}-\d{2}$/', (string)$s);
+function date_iso_today() {
+  return date("Y-m-d");
+}
+
+function ensure_enum($v, $allowed, $fallback) {
+  $v = strtolower(trim((string)$v));
+  return in_array($v, $allowed, true) ? $v : $fallback;
 }
 
 $action = $_GET["action"] ?? "";
 
 /* =========================
-   auth
+   AUTH
 ========================= */
 
 if ($action === "login") {
@@ -100,7 +105,6 @@ if ($action === "login") {
 if ($action === "logout") {
   $actor = (int)($_SESSION["usuario_id"] ?? 0);
   if ($actor > 0) audit_log($enlace, $actor, "logout", "usuarios", $actor, []);
-
   $_SESSION = [];
   if (ini_get("session.use_cookies")) {
     $p = session_get_cookie_params();
@@ -118,7 +122,7 @@ if ($action === "me") {
 }
 
 /* =========================
-   aulas
+   AULAS (ADMIN)
 ========================= */
 
 if ($action === "aulas_list") {
@@ -137,8 +141,7 @@ if ($action === "aulas_create") {
   $codigo = trim((string)($d["codigo"] ?? ""));
   $nombre = trim((string)($d["nombre"] ?? ""));
   $capacidad = (int)($d["capacidad"] ?? 0);
-  $estado = strtolower(trim((string)($d["estado"] ?? "disponible")));
-  if ($estado !== "disponible" && $estado !== "mantenimiento") $estado = "disponible";
+  $estado = ensure_enum($d["estado"] ?? "disponible", ["disponible","mantenimiento"], "disponible");
 
   if ($codigo === "" || $nombre === "" || $capacidad < 1) {
     json_out(["ok" => false, "error" => "datos inválidos"], 400);
@@ -168,12 +171,9 @@ if ($action === "aulas_set_estado") {
   need_role(["admin"]);
   $d = body_json();
   $id = (int)($d["id"] ?? 0);
-  $estado = strtolower(trim((string)($d["estado"] ?? "")));
-
+  $estado = ensure_enum($d["estado"] ?? "", ["disponible","mantenimiento"], "");
   if ($id < 1) json_out(["ok"=>false,"error"=>"id inválido"], 400);
-  if ($estado !== "disponible" && $estado !== "mantenimiento") {
-    json_out(["ok"=>false,"error"=>"estado inválido"], 400);
-  }
+  if ($estado === "") json_out(["ok"=>false,"error"=>"estado inválido"], 400);
 
   $sql = "UPDATE aulas SET estado=? WHERE id=?";
   $st = mysqli_prepare($enlace, $sql);
@@ -217,7 +217,7 @@ if ($action === "aulas_delete") {
 }
 
 /* =========================
-   franjas
+   FRANJAS
 ========================= */
 
 if ($action === "franjas_list") {
@@ -230,7 +230,7 @@ if ($action === "franjas_list") {
 }
 
 /* =========================
-   reservas
+   RESERVAS
 ========================= */
 
 if ($action === "reservas_list") {
@@ -247,12 +247,12 @@ if ($action === "reservas_list") {
     $where = "WHERE r.usuario_id=".(int)$_SESSION["usuario_id"];
   }
 
-  $sql = "SELECT
-            r.id, r.usuario_id, r.aula_id, r.franja_id,
-            r.fecha, r.estado, r.codigo_checkin, r.checkin_validado,
-            a.codigo AS aula, a.nombre AS aula_nombre,
-            f.hora_inicio, f.hora_fin,
-            u.nombre_usuario AS usuario
+  // IMPORTANTE: devolvemos campos que esperan usuario.js/encargado.js
+  $sql = "SELECT r.id, r.usuario_id, r.aula_id, r.franja_id,
+                 r.fecha, r.estado, r.codigo_checkin, r.checkin_validado,
+                 a.codigo AS aula_codigo, a.nombre AS aula_nombre,
+                 f.hora_inicio, f.hora_fin,
+                 u.nombre_usuario AS usuario
           FROM reservas r
           JOIN aulas a ON a.id=r.aula_id
           JOIN franjas f ON f.id=r.franja_id
@@ -261,7 +261,10 @@ if ($action === "reservas_list") {
           ORDER BY r.fecha DESC, f.hora_inicio";
   $rs = mysqli_query($enlace, $sql);
   $rows = [];
-  while ($r = mysqli_fetch_assoc($rs)) $rows[] = $r;
+  while ($r = mysqli_fetch_assoc($rs)) {
+    $r["aula"] = $r["aula_codigo"]; // compat
+    $rows[] = $r;
+  }
   json_out(["ok" => true, "reservas" => $rows]);
 }
 
@@ -271,23 +274,26 @@ if ($action === "reservas_create") {
 
   $aula_id = (int)($d["aula_id"] ?? 0);
   $franja_id = (int)($d["franja_id"] ?? 0);
-  $fecha = (string)($d["fecha"] ?? "");
+  $fecha = trim((string)($d["fecha"] ?? ""));
 
-  if ($aula_id < 1 || $franja_id < 1 || !is_date_iso($fecha)) {
+  if ($aula_id < 1 || $franja_id < 1 || !preg_match('/^\d{4}-\d{2}-\d{2}$/', $fecha)) {
     json_out(["ok"=>false,"error"=>"datos inválidos"], 400);
   }
 
+  // aula existe y no está en mantenimiento
   $st = mysqli_prepare($enlace, "SELECT estado FROM aulas WHERE id=? LIMIT 1");
   mysqli_stmt_bind_param($st, "i", $aula_id);
   mysqli_stmt_execute($st);
   $rs = mysqli_stmt_get_result($st);
   $a = mysqli_fetch_assoc($rs);
   mysqli_stmt_close($st);
+
   if (!$a) json_out(["ok"=>false,"error"=>"aula no existe"], 400);
   if (strtolower((string)$a["estado"]) === "mantenimiento") {
     json_out(["ok"=>false,"error"=>"aula en mantenimiento"], 400);
   }
 
+  // franja existe?
   $st = mysqli_prepare($enlace, "SELECT id FROM franjas WHERE id=? LIMIT 1");
   mysqli_stmt_bind_param($st, "i", $franja_id);
   mysqli_stmt_execute($st);
@@ -296,83 +302,81 @@ if ($action === "reservas_create") {
   mysqli_stmt_close($st);
   if (!$f) json_out(["ok"=>false,"error"=>"franja no existe"], 400);
 
-  $st = mysqli_prepare($enlace, "SELECT id FROM reservas WHERE aula_id=? AND franja_id=? AND fecha=? AND estado <> 'cancelada' LIMIT 1");
+  // ya reservado ese slot?
+  $sql = "SELECT id FROM reservas
+          WHERE aula_id=? AND franja_id=? AND fecha=? AND estado <> 'cancelada'
+          LIMIT 1";
+  $st = mysqli_prepare($enlace, $sql);
   mysqli_stmt_bind_param($st, "iis", $aula_id, $franja_id, $fecha);
   mysqli_stmt_execute($st);
   $rs = mysqli_stmt_get_result($st);
   $ex = mysqli_fetch_assoc($rs);
   mysqli_stmt_close($st);
-  if ($ex) json_out(["ok"=>false,"error"=>"ya existe una reserva en ese horario"], 400);
+  if ($ex) json_out(["ok"=>false,"error"=>"ya está reservado"], 400);
 
+  // insertar
   $codigo = gen_checkin_code(4);
-
-  $sql = "INSERT INTO reservas(usuario_id,aula_id,fecha,franja_id,estado,codigo_checkin,checkin_validado)
-          VALUES(?,?,?,?, 'activa', ?, 0)";
-  $st = mysqli_prepare($enlace, $sql);
-
   $uid = (int)$_SESSION["usuario_id"];
+
+  $sql = "INSERT INTO reservas(usuario_id,aula_id,fecha,franja_id,estado,codigo_checkin)
+          VALUES(?,?,?,?, 'activa', ?)";
+  $st = mysqli_prepare($enlace, $sql);
   mysqli_stmt_bind_param($st, "iiiss", $uid, $aula_id, $fecha, $franja_id, $codigo);
 
   if (!mysqli_stmt_execute($st)) {
     $err = mysqli_error($enlace);
     mysqli_stmt_close($st);
+    // aquí cae el trigger de max 3 por semana
     json_out(["ok"=>false,"error"=>$err ?: "no se pudo reservar"], 400);
   }
 
-  $rid = mysqli_insert_id($enlace);
+  $newId = mysqli_insert_id($enlace);
   mysqli_stmt_close($st);
 
-  audit_log($enlace, $uid, "create", "reservas", (int)$rid, [
-    "aula_id"=>$aula_id,"franja_id"=>$franja_id,"fecha"=>$fecha,"codigo_checkin"=>$codigo
+  audit_log($enlace, $uid, "create", "reservas", (int)$newId, [
+    "aula_id"=>$aula_id,"franja_id"=>$franja_id,"fecha"=>$fecha
   ]);
 
-  json_out(["ok"=>true, "id" => (int)$rid, "codigo_checkin"=>$codigo]);
+  json_out(["ok"=>true, "id"=>(int)$newId, "codigo_checkin"=>$codigo]);
 }
 
-if ($action === "checkin_validate") {
-  need_role(["encargado","admin"]);
+if ($action === "reservas_cancel") {
+  need_login();
   $d = body_json();
-  $codigo = trim((string)($d["codigo"] ?? ""));
-  if ($codigo === "") json_out(["ok"=>false,"error"=>"código requerido"], 400);
+  $id = (int)($d["id"] ?? 0);
+  if ($id < 1) json_out(["ok"=>false,"error"=>"id inválido"], 400);
 
-  $sql = "SELECT id, checkin_validado
-          FROM reservas
-          WHERE codigo_checkin=? AND estado <> 'cancelada'
-          LIMIT 1";
-  $st = mysqli_prepare($enlace, $sql);
-  mysqli_stmt_bind_param($st, "s", $codigo);
+  $rol = strtolower((string)($_SESSION["rol"] ?? ""));
+  $uid = (int)$_SESSION["usuario_id"];
+
+  // solo dueño o admin/encargado
+  $st = mysqli_prepare($enlace, "SELECT usuario_id, estado FROM reservas WHERE id=? LIMIT 1");
+  mysqli_stmt_bind_param($st, "i", $id);
   mysqli_stmt_execute($st);
   $rs = mysqli_stmt_get_result($st);
   $r = mysqli_fetch_assoc($rs);
   mysqli_stmt_close($st);
 
-  if (!$r) json_out(["ok"=>false,"error"=>"código no existe"], 404);
+  if (!$r) json_out(["ok"=>false,"error"=>"reserva no existe"], 404);
 
-  $ya = ((int)$r["checkin_validado"] === 1);
-  if ($ya) {
-    json_out(["ok"=>true, "ya_validado"=>true]);
+  $owner = (int)$r["usuario_id"];
+  if ($owner !== $uid && !in_array($rol, ["admin","encargado"], true)) {
+    json_out(["ok"=>false,"error"=>"no autorizado"], 403);
   }
 
-  $rid = (int)$r["id"];
-  $actor = (int)$_SESSION["usuario_id"];
-
-  $sql = "UPDATE reservas
-          SET checkin_validado=1,
-              checkin_validado_por=?,
-              checkin_validado_en=NOW()
-          WHERE id=? AND checkin_validado=0";
-  $st = mysqli_prepare($enlace, $sql);
-  mysqli_stmt_bind_param($st, "ii", $actor, $rid);
+  $st = mysqli_prepare($enlace, "UPDATE reservas SET estado='cancelada' WHERE id=?");
+  mysqli_stmt_bind_param($st, "i", $id);
   mysqli_stmt_execute($st);
+  $aff = mysqli_stmt_affected_rows($st);
   mysqli_stmt_close($st);
 
-  audit_log($enlace, $actor, "update", "reservas", $rid, ["checkin_validado"=>1]);
+  audit_log($enlace, $uid, "update", "reservas", $id, ["estado"=>"cancelada"]);
 
-  json_out(["ok"=>true, "ya_validado"=>false]);
+  json_out(["ok"=>true,"updated"=>(int)$aff]);
 }
 
 /* =========================
-   disponibilidad
+   DISPONIBILIDAD
 ========================= */
 
 if ($action === "disponibilidad") {
@@ -380,8 +384,8 @@ if ($action === "disponibilidad") {
 
   $from = (string)($_GET["from"] ?? "");
   $to   = (string)($_GET["to"] ?? "");
-  if (!is_date_iso($from) || !is_date_iso($to)) {
-    json_out(["ok"=>false,"error"=>"from/to inválidos (yyyy-mm-dd)"], 400);
+  if (!preg_match('/^\d{4}-\d{2}-\d{2}$/', $from) || !preg_match('/^\d{4}-\d{2}-\d{2}$/', $to)) {
+    json_out(["ok"=>false,"error"=>"from/to inválidos (YYYY-MM-DD)"], 400);
   }
 
   $aulas = [];
@@ -392,7 +396,8 @@ if ($action === "disponibilidad") {
   $rs = mysqli_query($enlace, "SELECT id,hora_inicio,hora_fin FROM franjas ORDER BY hora_inicio");
   while ($r = mysqli_fetch_assoc($rs)) $franjas[] = $r;
 
-  $sql = "SELECT r.id, r.fecha, r.estado, r.checkin_validado, r.aula_id, r.franja_id,
+  $sql = "SELECT r.id, r.usuario_id, r.fecha, r.estado, r.checkin_validado,
+                 r.aula_id, r.franja_id, r.codigo_checkin,
                  u.nombre_usuario AS usuario
           FROM reservas r
           JOIN usuarios u ON u.id=r.usuario_id
@@ -410,7 +415,7 @@ if ($action === "disponibilidad") {
 }
 
 /* =========================
-   reportes
+   REPORTES
 ========================= */
 
 if ($action === "reportes_create") {
@@ -418,21 +423,30 @@ if ($action === "reportes_create") {
   $d = body_json();
 
   $aula_id = (int)($d["aula_id"] ?? 0);
+  $gravedad = ensure_enum($d["gravedad"] ?? "baja", ["baja","media","alta"], "baja");
   $descripcion = trim((string)($d["descripcion"] ?? ""));
-  $gravedad = strtolower(trim((string)($d["gravedad"] ?? "baja")));
-  $reserva_id = isset($d["reserva_id"]) ? (int)$d["reserva_id"] : null;
 
   if ($aula_id < 1 || $descripcion === "") {
     json_out(["ok"=>false,"error"=>"datos inválidos"], 400);
   }
-  if (!in_array($gravedad, ["baja","media","alta"], true)) $gravedad = "baja";
+
+  // aula existe?
+  $st = mysqli_prepare($enlace, "SELECT id FROM aulas WHERE id=? LIMIT 1");
+  mysqli_stmt_bind_param($st, "i", $aula_id);
+  mysqli_stmt_execute($st);
+  $rs = mysqli_stmt_get_result($st);
+  $a = mysqli_fetch_assoc($rs);
+  mysqli_stmt_close($st);
+  if (!$a) json_out(["ok"=>false,"error"=>"aula no existe"], 400);
+
+  $uid = (int)$_SESSION["usuario_id"];
+  $reserva_id = (int)($d["reserva_id"] ?? 0);
+  if ($reserva_id < 1) $reserva_id = null;
 
   $sql = "INSERT INTO reportes(reportante_id,reserva_id,aula_id,descripcion,gravedad,estado)
           VALUES(?,?,?,?,?,'pendiente')";
   $st = mysqli_prepare($enlace, $sql);
-
-  $actor = (int)$_SESSION["usuario_id"];
-  mysqli_stmt_bind_param($st, "iiiss", $actor, $reserva_id, $aula_id, $descripcion, $gravedad);
+  mysqli_stmt_bind_param($st, "iiiss", $uid, $reserva_id, $aula_id, $descripcion, $gravedad);
 
   if (!mysqli_stmt_execute($st)) {
     $err = mysqli_error($enlace);
@@ -440,20 +454,18 @@ if ($action === "reportes_create") {
     json_out(["ok"=>false,"error"=>$err ?: "no se pudo crear reporte"], 400);
   }
 
-  $rid = mysqli_insert_id($enlace);
+  $newId = mysqli_insert_id($enlace);
   mysqli_stmt_close($st);
 
-  audit_log($enlace, $actor, "create", "reportes", (int)$rid, [
-    "aula_id"=>$aula_id,"gravedad"=>$gravedad,"reserva_id"=>$reserva_id
-  ]);
+  audit_log($enlace, $uid, "create", "reportes", (int)$newId, ["aula_id"=>$aula_id,"gravedad"=>$gravedad]);
 
-  json_out(["ok"=>true, "id"=>(int)$rid]);
+  json_out(["ok"=>true,"id"=>(int)$newId]);
 }
 
 if ($action === "reportes_list") {
   need_role(["admin","encargado"]);
 
-  $sql = "SELECT r.id, r.fecha, r.descripcion, r.gravedad, r.estado,
+  $sql = "SELECT r.id, r.aula_id, r.reserva_id, r.fecha, r.descripcion, r.gravedad, r.estado,
                  u.nombre_usuario AS reportante,
                  a.codigo AS aula
           FROM reportes r
@@ -485,7 +497,49 @@ if ($action === "reportes_resolver") {
 }
 
 /* =========================
-   multas
+   CHECK-IN (ENCARGADO/ADMIN)
+========================= */
+
+if ($action === "checkin_validate") {
+  need_role(["admin","encargado"]);
+  $d = body_json();
+  $codigo = trim((string)($d["codigo"] ?? ""));
+  if ($codigo === "") json_out(["ok"=>false,"error"=>"código requerido"], 400);
+
+  $sql = "SELECT id, checkin_validado
+          FROM reservas
+          WHERE codigo_checkin=? AND estado='activa'
+          LIMIT 1";
+  $st = mysqli_prepare($enlace, $sql);
+  mysqli_stmt_bind_param($st, "s", $codigo);
+  mysqli_stmt_execute($st);
+  $rs = mysqli_stmt_get_result($st);
+  $row = mysqli_fetch_assoc($rs);
+  mysqli_stmt_close($st);
+
+  if (!$row) json_out(["ok"=>false,"error"=>"código no encontrado"], 404);
+
+  $ya = (int)$row["checkin_validado"] === 1;
+  if ($ya) json_out(["ok"=>true,"ya_validado"=>true]);
+
+  $id = (int)$row["id"];
+  $actor = (int)$_SESSION["usuario_id"];
+
+  $sql = "UPDATE reservas
+          SET checkin_validado=1, checkin_validado_por=?, checkin_validado_en=NOW()
+          WHERE id=?";
+  $st = mysqli_prepare($enlace, $sql);
+  mysqli_stmt_bind_param($st, "ii", $actor, $id);
+  mysqli_stmt_execute($st);
+  mysqli_stmt_close($st);
+
+  audit_log($enlace, $actor, "update", "reservas", $id, ["checkin_validado"=>1]);
+
+  json_out(["ok"=>true,"ya_validado"=>false]);
+}
+
+/* =========================
+   MULTAS (ENCARGADO/ADMIN)
 ========================= */
 
 if ($action === "multas_list") {
@@ -493,15 +547,15 @@ if ($action === "multas_list") {
 
   $sql = "SELECT m.id, m.fecha, m.motivo, m.gravedad, m.monto,
                  u.nombre_usuario AS usuario,
-                 m.reporte_id
+                 e.nombre_usuario AS emitida_por
           FROM multas m
           JOIN usuarios u ON u.id=m.usuario_id
+          JOIN usuarios e ON e.id=m.emitida_por
           ORDER BY m.fecha DESC";
   $rs = mysqli_query($enlace, $sql);
   $rows = [];
   while ($r = mysqli_fetch_assoc($rs)) $rows[] = $r;
-
-  json_out(["ok"=>true, "multas"=>$rows]);
+  json_out(["ok"=>true,"multas"=>$rows]);
 }
 
 if ($action === "multas_create") {
@@ -511,13 +565,21 @@ if ($action === "multas_create") {
   $reporte_id = (int)($d["reporte_id"] ?? 0);
   $usuario_id = (int)($d["usuario_id"] ?? 0);
   $motivo = trim((string)($d["motivo"] ?? ""));
-  $gravedad = strtolower(trim((string)($d["gravedad"] ?? "baja")));
+  $gravedad = ensure_enum($d["gravedad"] ?? "baja", ["baja","media","alta"], "baja");
   $monto = (float)($d["monto"] ?? 0);
 
   if ($reporte_id < 1 || $usuario_id < 1 || $motivo === "" || $monto <= 0) {
     json_out(["ok"=>false,"error"=>"datos inválidos"], 400);
   }
-  if (!in_array($gravedad, ["baja","media","alta"], true)) $gravedad = "baja";
+
+  // reporte existe?
+  $st = mysqli_prepare($enlace, "SELECT id FROM reportes WHERE id=? LIMIT 1");
+  mysqli_stmt_bind_param($st, "i", $reporte_id);
+  mysqli_stmt_execute($st);
+  $rs = mysqli_stmt_get_result($st);
+  $rep = mysqli_fetch_assoc($rs);
+  mysqli_stmt_close($st);
+  if (!$rep) json_out(["ok"=>false,"error"=>"reporte no existe"], 400);
 
   $actor = (int)$_SESSION["usuario_id"];
 
@@ -529,16 +591,17 @@ if ($action === "multas_create") {
   if (!mysqli_stmt_execute($st)) {
     $err = mysqli_error($enlace);
     mysqli_stmt_close($st);
-    json_out(["ok"=>false,"error"=>$err ?: "no se pudo emitir multa"], 400);
+    json_out(["ok"=>false,"error"=>$err ?: "no se pudo crear multa"], 400);
   }
-  $mid = mysqli_insert_id($enlace);
+
+  $newId = mysqli_insert_id($enlace);
   mysqli_stmt_close($st);
 
-  audit_log($enlace, $actor, "create", "multas", (int)$mid, [
-    "reporte_id"=>$reporte_id,"usuario_id"=>$usuario_id,"monto"=>$monto,"gravedad"=>$gravedad
+  audit_log($enlace, $actor, "create", "multas", (int)$newId, [
+    "reporte_id"=>$reporte_id,"usuario_id"=>$usuario_id,"gravedad"=>$gravedad,"monto"=>$monto
   ]);
 
-  json_out(["ok"=>true, "id"=>(int)$mid]);
+  json_out(["ok"=>true,"id"=>(int)$newId]);
 }
 
 json_out(["ok" => false, "error" => "acción no válida"], 404);

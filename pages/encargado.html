@@ -5,13 +5,12 @@
   <title>sistema de gestión de aulas - encargado</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <link href="../css/estilo.css" rel="stylesheet" type="text/css" />
+  <link href="../css/encargado.css" rel="stylesheet" type="text/css" />
 </head>
 
 <body>
   <header class="header-espe">
-    <div class="header-logo">
-      <span class="logo-placeholder">espe</span>
-    </div>
+    <div class="header-logo"><span class="logo-placeholder">espe</span></div>
 
     <div class="header-textos">
       <h1>sistema de gestión de aulas de biblioteca - encargado</h1>
@@ -37,6 +36,7 @@
   </nav>
 
   <main class="layout-principal">
+    <!-- INICIO -->
     <section id="seccion-inicio" class="seccion seccion-activa">
       <div class="seccion-header">
         <h2>panel del encargado</h2>
@@ -70,35 +70,34 @@
       </div>
     </section>
 
-    <section id="seccion-horarios" class="seccion seccion-oculta">
-      <div class="seccion-header">
-        <h2>horarios</h2>
-        <p class="texto-filtro">hoy, mañana o toda la semana con filtro por aula</p>
-      </div>
+    <!-- HORARIOS (GRID TIPO ADMIN) -->
+<section id="seccion-horarios" class="seccion seccion-oculta">
+  <div class="seccion-header">
+    <h2>disponibilidad de aulas</h2>
+    <p id="texto-filtro-actual" class="texto-filtro">vista: hoy</p>
+  </div>
 
-      <div class="input-linea">
-        <div class="form-grupo">
-          <label for="vista-horarios">vista:</label>
-          <select id="vista-horarios" class="select-estado">
-            <option value="hoy">hoy</option>
-            <option value="manana">mañana</option>
-            <option value="semana">toda la semana</option>
-          </select>
-        </div>
+  <div class="input-linea">
+    <div class="form-grupo" style="min-width:240px;">
+      <label for="filtro-aula-horarios">aula:</label>
+      <select id="filtro-aula-horarios" class="select-estado"></select>
+    </div>
 
-        <div class="form-grupo">
-          <label for="filtro-aula-horarios">aula:</label>
-          <select id="filtro-aula-horarios" class="select-estado"></select>
-        </div>
+    <button id="btn-refrescar-horarios" class="btn-primario">refrescar</button>
+  </div>
 
-        <button id="btn-refrescar-horarios" class="btn-primario">refrescar</button>
-      </div>
+  <div id="grid-disponibilidad" class="contenedor-disponibilidad" style="margin-top:1rem;"></div>
 
-      <div style="margin-top:1rem;">
-        <div id="contenedor-horarios"></div>
-      </div>
-    </section>
+  <div class="leyenda-estado">
+    <span class="badge badge-disponible">disponible</span>
+    <span class="badge badge-ocupado">reservado</span>
+    <span class="badge badge-checkin">check-in</span>
+    <span class="badge badge-mantenimiento">mantenimiento</span>
+  </div>
+</section>
 
+
+    <!-- REPORTES -->
     <section id="seccion-reportes" class="seccion seccion-oculta">
       <div class="seccion-header">
         <h2>reportes de uso indebido</h2>
@@ -140,6 +139,7 @@
       </div>
     </section>
 
+    <!-- CHECKIN -->
     <section id="seccion-checkin" class="seccion seccion-oculta">
       <div class="seccion-header">
         <h2>validar check-in</h2>
@@ -157,6 +157,7 @@
       <div id="resultado-checkin" style="margin-top:1rem;"></div>
     </section>
 
+    <!-- MULTAS -->
     <section id="seccion-multas" class="seccion seccion-oculta">
       <div class="seccion-header">
         <h2>multas</h2>
@@ -172,6 +173,7 @@
               <th>motivo</th>
               <th>gravedad</th>
               <th>monto</th>
+              <th>emitida por</th>
             </tr>
           </thead>
           <tbody id="tbody-multas"></tbody>
@@ -179,6 +181,47 @@
       </div>
     </section>
   </main>
+
+  <!-- MODAL MULTA -->
+  <div id="overlay-modal" class="overlay oculto"></div>
+  <div id="modal-multa" class="modal oculto">
+    <div class="modal-contenido">
+      <div class="modal-header">
+        <h3>emitir multa</h3>
+        <button id="btn-cerrar-multa" class="btn-cerrar-modal">×</button>
+      </div>
+
+      <div class="modal-body">
+        <p class="texto-filtro" id="multa-contexto">reporte #</p>
+
+        <div class="grid-form-aula" style="margin-top:.75rem;">
+          <div class="form-grupo">
+            <label for="multa-motivo">motivo</label>
+            <input id="multa-motivo" type="text" placeholder="ej: daño de equipo / ruido excesivo" />
+          </div>
+
+          <div class="form-grupo">
+            <label for="multa-gravedad">gravedad</label>
+            <select id="multa-gravedad" class="select-estado">
+              <option value="baja">baja</option>
+              <option value="media">media</option>
+              <option value="alta">alta</option>
+            </select>
+          </div>
+
+          <div class="form-grupo">
+            <label for="multa-monto">monto (usd)</label>
+            <input id="multa-monto" type="number" min="0" step="0.01" placeholder="ej: 5.00" />
+          </div>
+        </div>
+      </div>
+
+      <div class="modal-footer">
+        <button id="btn-emitir-multa" class="btn-primario">emitir</button>
+        <button id="btn-cancelar-multa" class="btn-secundario">cancelar</button>
+      </div>
+    </div>
+  </div>
 
   <footer class="footer-espe">
     <p>sistema de gestión de aulas de biblioteca - universidad de las fuerzas armadas espe</p>
