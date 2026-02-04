@@ -2,7 +2,7 @@
 <html lang="es">
 <head>
   <meta charset="utf-8">
-  <title>Sistema de Gestión - Administrador</title>
+  <title>Sistema de Gestión - Usuario</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <link href="../css/estilo.css" rel="stylesheet" type="text/css">
   <link href="../css/admin.css" rel="stylesheet" type="text/css">
@@ -15,15 +15,15 @@
     </div>
 
     <div class="header-textos">
-      <h1>Sistema de Gestión de Aulas de Biblioteca - Admin</h1>
+      <h1>Sistema de Gestión de Aulas de Biblioteca - Usuario</h1>
       <p>Universidad de las Fuerzas Armadas ESPE</p>
     </div>
 
     <div class="usuario-info">
-      <div class="usuario-avatar" id="avatar-usuario">A</div>
+      <div class="usuario-avatar" id="avatar-usuario">U</div>
       <div class="usuario-datos">
-        <div class="usuario-nombre" id="nombre-usuario">Administrador</div>
-        <div class="usuario-rol" id="rol-usuario">Administrador</div>
+        <div class="usuario-nombre" id="nombre-usuario">Usuario</div>
+        <div class="usuario-rol" id="rol-usuario">Usuario</div>
       </div>
       <button id="btn-logout" class="btn-logout">Salir</button>
     </div>
@@ -33,12 +33,13 @@
     <button id="btn-hoy" class="nav-btn">Hoy</button>
     <button id="btn-manana" class="nav-btn">Mañana</button>
     <button id="btn-semana" class="nav-btn">Semana completa</button>
-    <button id="btn-crear-aula" class="nav-btn nav-btn-crear">+ Crear Aula</button>
-    <button id="btn-reportes" class="nav-btn nav-btn-reportes">Reportes</button>
-    <button id="btn-admin" class="nav-btn nav-btn-admin">Panel Admin</button>
+    <button id="btn-mis-reservas" class="nav-btn nav-btn-reportes">Mis reservas</button>
+    <button id="btn-perfil" class="nav-btn nav-btn-admin">Mi perfil</button>
   </nav>
 
   <main class="layout-principal">
+
+    <!-- DISPONIBILIDAD -->
     <section id="seccion-disponibilidad" class="seccion seccion-activa">
       <div class="seccion-header">
         <h2>Disponibilidad de aulas</h2>
@@ -53,110 +54,93 @@
         <span class="badge badge-checkin">Check-in</span>
         <span class="badge badge-mantenimiento">Mantenimiento</span>
       </div>
+
+      <p class="texto-filtro" style="margin-top:.75rem;">
+        tip: haz click en un bloque “disponible” para crear una reserva.
+      </p>
     </section>
 
-    <section id="seccion-crear-aula" class="seccion seccion-oculta">
+    <!-- MIS RESERVAS -->
+    <section id="seccion-reservas" class="seccion seccion-oculta">
       <div class="seccion-header">
-        <h2>Crear nueva aula</h2>
-        <p>Agregar un nuevo aula al sistema</p>
+        <h2>Mis reservas</h2>
+        <p>Vista de reservas activas del usuario actual.</p>
       </div>
 
-      <div class="form-crear-aula">
-        <div class="grid-form-aula">
-          <div class="form-grupo">
-            <label for="input-nombre-aula">Nombre del aula:</label>
-            <input type="text" id="input-nombre-aula" placeholder="Ej: Aula 101" required>
-          </div>
-
-          <div class="form-grupo">
-            <label for="input-capacidad">Capacidad:</label>
-            <input type="number" id="input-capacidad" placeholder="Ej: 30" min="1" required>
-          </div>
-
-          <div class="form-grupo">
-            <label for="input-equipamiento">Equipamiento:</label>
-            <input type="text" id="input-equipamiento" placeholder="Proyector, Pizarra, etc.">
-          </div>
-
-          <div class="form-grupo">
-            <label for="select-estado-inicial">Estado inicial:</label>
-            <select id="select-estado-inicial" class="select-estado">
-              <option value="Disponible">Disponible</option>
-              <option value="Mantenimiento">Mantenimiento</option>
-            </select>
-          </div>
-        </div>
-
-        <button id="btn-guardar-aula" class="btn-primario">Guardar aula</button>
-      </div>
-
-      <div class="seccion-header">
-        <h3>Aulas existentes</h3>
-        <p>Lista de aulas en el sistema</p>
-      </div>
-
-      <div id="panel-admin-contenido" class="panel-admin"></div>
+      <div id="lista-reservas-usuario" class="lista-reportes"></div>
     </section>
 
-    <section id="seccion-reportes" class="seccion seccion-oculta">
+    <!-- PERFIL -->
+    <section id="seccion-perfil" class="seccion seccion-oculta">
       <div class="seccion-header">
-        <h2>Reportes de uso indebido</h2>
-        <p>Gestión de quejas y reportes de usuarios</p>
+        <h2>Mi perfil</h2>
+        <p>Datos de tu cuenta.</p>
       </div>
 
-      <div class="panel-estadisticas">
-        <div class="estadistica-card">
-          <div class="estadistica-valor" id="total-reportes">0</div>
-          <div class="estadistica-label">Reportes totales</div>
-        </div>
-        <div class="estadistica-card">
-          <div class="estadistica-valor" id="reportes-pendientes">0</div>
-          <div class="estadistica-label">Pendientes</div>
-        </div>
-        <div class="estadistica-card">
-          <div class="estadistica-valor" id="reportes-resueltos">0</div>
-          <div class="estadistica-label">Resueltos</div>
+      <div class="panel-admin">
+        <div style="display:grid; gap:.5rem;">
+          <div><strong>Nombres:</strong> <span id="pf-nombres">-</span></div>
+          <div><strong>Apellidos:</strong> <span id="pf-apellidos">-</span></div>
+          <div><strong>Usuario:</strong> <span id="pf-usuario">-</span></div>
+          <div><strong>Correo:</strong> <span id="pf-correo">-</span></div>
+          <div><strong>Teléfono:</strong> <span id="pf-telefono">-</span></div>
+          <div><strong>Rol:</strong> <span id="pf-rol">-</span></div>
         </div>
       </div>
-
-      <div class="lista-reportes" id="lista-reportes"></div>
     </section>
 
-    <section id="seccion-admin-panel" class="seccion seccion-oculta">
-      <div class="seccion-header">
-        <h2>Panel de administración de aulas</h2>
-        <p>Gestión de estados de aulas (Disponible / Mantenimiento).</p>
-      </div>
-      <div id="panel-admin-aulas" class="panel-admin"></div>
-    </section>
   </main>
 
+  <!-- MODAL RESERVA -->
   <div id="overlay-modal" class="overlay oculto"></div>
-  <div id="modal-confirmacion" class="modal oculto">
+  <div id="modal-reserva" class="modal oculto">
     <div class="modal-contenido">
       <div class="modal-header">
-        <h3 id="modal-titulo">Confirmación</h3>
+        <h3>Nueva reserva de aula</h3>
         <button id="btn-cerrar-modal" class="btn-cerrar-modal">×</button>
       </div>
+
       <div class="modal-body">
-        <p id="modal-mensaje">¿Está seguro de realizar esta acción?</p>
+        <div class="form-crear-aula">
+          <div class="grid-form-aula">
+            <div class="form-grupo">
+              <label>Aula:</label>
+              <input type="text" id="input-aula" readonly>
+            </div>
+            <div class="form-grupo">
+              <label>Fecha:</label>
+              <input type="text" id="input-fecha" readonly>
+            </div>
+            <div class="form-grupo">
+              <label>Hora inicio:</label>
+              <input type="text" id="input-hora-inicio" readonly>
+            </div>
+            <div class="form-grupo">
+              <label>Hora fin:</label>
+              <input type="text" id="input-hora-fin" readonly>
+            </div>
+          </div>
+        </div>
       </div>
+
       <div class="modal-footer">
-        <button id="btn-confirmar-accion" class="btn-primario">Confirmar</button>
-        <button id="btn-cancelar-accion" class="btn-secundario">Cancelar</button>
+        <button id="btn-confirmar-reserva" class="btn-primario">Confirmar reserva</button>
+        <button id="btn-cancelar-modal" class="btn-secundario">Cancelar</button>
       </div>
     </div>
   </div>
 
-  <script type="module">
-    import { requireAuth } from "../js/guard.js";
-    const me = await requireAuth(["admin"]);
-    if (!me) return;
+<script type="module">
+  import { requireAuth, startIdleLogout } from "../js/guard.js";
+  const me = await requireAuth(["usuario"]);
+  if (!me) location.href = "../index.html";
+  startIdleLogout(3);
 
-    const s = document.createElement("script");
-    s.src = "../js/admin.js";
-    s.defer = true;
-    document.body.appendChild(s);
-  </script>
+  const s = document.createElement("script");
+  s.src = "../js/usuario.js";
+  s.defer = true;
+  document.body.appendChild(s);
+</script>
+
 </body>
 </html>

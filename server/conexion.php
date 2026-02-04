@@ -13,3 +13,7 @@ if (!$enlace) {
 }
 
 mysqli_set_charset($enlace, "utf8mb4");
+
+
+
+

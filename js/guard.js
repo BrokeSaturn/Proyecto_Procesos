@@ -14,19 +14,13 @@ export async function requireAuth(rolesPermitidos = []) {
       cache: "no-store",
       headers: { Accept: "application/json" },
     });
-  } catch (e) {
+  } catch {
     window.location.href = new URL("../index.html", window.location.href).toString();
     return null;
   }
 
-  const text = await res.text();
-  let data = null;
-  try { data = JSON.parse(text); } catch {
-    window.location.href = new URL("../index.html", window.location.href).toString();
-    return null;
-  }
-
-  if (!data.ok) {
+  const data = await res.json().catch(() => null);
+  if (!data || !data.ok) {
     window.location.href = new URL("../index.html", window.location.href).toString();
     return null;
   }
