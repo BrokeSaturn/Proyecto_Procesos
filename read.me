@@ -1,0 +1,3 @@
+admin 1234
+encargado 1234
+jf2 12
