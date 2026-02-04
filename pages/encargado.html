@@ -4,8 +4,8 @@
   <meta charset="utf-8" />
   <title>sistema de gestión de aulas - encargado</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <link href="../css/estilo.css" rel="stylesheet" type="text/css" />
-  <link href="../css/encargado.css" rel="stylesheet" type="text/css" />
+  <link href="../css/estilo.css" rel="stylesheet" />
+  <link href="../css/encargado.css" rel="stylesheet" />
 </head>
 
 <body>
@@ -36,7 +36,6 @@
   </nav>
 
   <main class="layout-principal">
-    <!-- INICIO -->
     <section id="seccion-inicio" class="seccion seccion-activa">
       <div class="seccion-header">
         <h2>panel del encargado</h2>
@@ -70,34 +69,31 @@
       </div>
     </section>
 
-    <!-- HORARIOS (GRID TIPO ADMIN) -->
-<section id="seccion-horarios" class="seccion seccion-oculta">
-  <div class="seccion-header">
-    <h2>disponibilidad de aulas</h2>
-    <p id="texto-filtro-actual" class="texto-filtro">vista: hoy</p>
-  </div>
+    <section id="seccion-horarios" class="seccion seccion-oculta">
+      <div class="seccion-header">
+        <h2>disponibilidad de aulas</h2>
+        <p id="texto-filtro-actual" class="texto-filtro">vista: hoy</p>
+      </div>
 
-  <div class="input-linea">
-    <div class="form-grupo" style="min-width:240px;">
-      <label for="filtro-aula-horarios">aula:</label>
-      <select id="filtro-aula-horarios" class="select-estado"></select>
-    </div>
+      <div class="input-linea">
+        <div class="form-grupo" style="min-width:240px;">
+          <label for="filtro-aula-horarios">aula:</label>
+          <select id="filtro-aula-horarios" class="select-estado"></select>
+        </div>
 
-    <button id="btn-refrescar-horarios" class="btn-primario">refrescar</button>
-  </div>
+        <button id="btn-refrescar-horarios" class="btn-primario">refrescar</button>
+      </div>
 
-  <div id="grid-disponibilidad" class="contenedor-disponibilidad" style="margin-top:1rem;"></div>
+      <div id="grid-disponibilidad" class="contenedor-disponibilidad" style="margin-top:1rem;"></div>
 
-  <div class="leyenda-estado">
-    <span class="badge badge-disponible">disponible</span>
-    <span class="badge badge-ocupado">reservado</span>
-    <span class="badge badge-checkin">check-in</span>
-    <span class="badge badge-mantenimiento">mantenimiento</span>
-  </div>
-</section>
+      <div class="leyenda-estado">
+        <span class="badge badge-disponible">disponible</span>
+        <span class="badge badge-ocupado">reservado</span>
+        <span class="badge badge-checkin">check-in</span>
+        <span class="badge badge-mantenimiento">mantenimiento</span>
+      </div>
+    </section>
 
-
-    <!-- REPORTES -->
     <section id="seccion-reportes" class="seccion seccion-oculta">
       <div class="seccion-header">
         <h2>reportes de uso indebido</h2>
@@ -122,7 +118,7 @@
         <button id="btn-refrescar-reportes" class="btn-primario">refrescar</button>
       </div>
 
-      <div style="margin-top:1rem;">
+      <div class="tabla-wrap">
         <table class="tabla-simple">
           <thead>
             <tr>
@@ -139,7 +135,6 @@
       </div>
     </section>
 
-    <!-- CHECKIN -->
     <section id="seccion-checkin" class="seccion seccion-oculta">
       <div class="seccion-header">
         <h2>validar check-in</h2>
@@ -157,14 +152,13 @@
       <div id="resultado-checkin" style="margin-top:1rem;"></div>
     </section>
 
-    <!-- MULTAS -->
     <section id="seccion-multas" class="seccion seccion-oculta">
       <div class="seccion-header">
         <h2>multas</h2>
         <p class="texto-filtro">historial de sanciones emitidas</p>
       </div>
 
-      <div style="margin-top:0.5rem;">
+      <div class="tabla-wrap">
         <table class="tabla-simple">
           <thead>
             <tr>
@@ -182,7 +176,6 @@
     </section>
   </main>
 
-  <!-- MODAL MULTA -->
   <div id="overlay-modal" class="overlay oculto"></div>
   <div id="modal-multa" class="modal oculto">
     <div class="modal-contenido">
