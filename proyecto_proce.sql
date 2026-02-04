@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Servidor: 127.0.0.1:3307
--- Tiempo de generación: 04-02-2026 a las 12:59:41
+-- Tiempo de generación: 04-02-2026 a las 23:33:07
 -- Versión del servidor: 8.0.44
 -- Versión de PHP: 8.2.12
 
@@ -89,7 +89,73 @@ INSERT INTO `auditoria` (`id`, `fecha`, `actor_id`, `accion`, `tabla`, `registro
 (45, '2026-02-04 06:54:10', 2, 'login', 'usuarios', 2, '{\"rol\": \"encargado\"}'),
 (46, '2026-02-04 06:56:49', 2, 'logout', 'usuarios', 2, '[]'),
 (47, '2026-02-04 06:56:55', 1, 'login', 'usuarios', 1, '{\"rol\": \"admin\"}'),
-(48, '2026-02-04 06:57:10', 1, 'create', 'aulas', 8, '{\"codigo\": \"A-5\", \"estado\": \"disponible\", \"nombre\": \"aula 4\", \"capacidad\": 10}');
+(48, '2026-02-04 06:57:10', 1, 'create', 'aulas', 8, '{\"codigo\": \"A-5\", \"estado\": \"disponible\", \"nombre\": \"aula 4\", \"capacidad\": 10}'),
+(49, '2026-02-04 07:01:15', 1, 'logout', 'usuarios', 1, '[]'),
+(50, '2026-02-04 16:02:19', 1, 'login', 'usuarios', 1, '{\"rol\": \"admin\"}'),
+(51, '2026-02-04 16:02:23', 1, 'logout', 'usuarios', 1, '[]'),
+(52, '2026-02-04 16:02:31', 1, 'login', 'usuarios', 1, '{\"rol\": \"admin\"}'),
+(53, '2026-02-04 16:02:35', 1, 'logout', 'usuarios', 1, '[]'),
+(54, '2026-02-04 16:02:42', 2, 'login', 'usuarios', 2, '{\"rol\": \"encargado\"}'),
+(55, '2026-02-04 16:02:50', 2, 'logout', 'usuarios', 2, '[]'),
+(56, '2026-02-04 16:05:47', 1, 'login', 'usuarios', 1, '{\"rol\": \"admin\"}'),
+(57, '2026-02-04 16:06:48', 1, 'logout', 'usuarios', 1, '[]'),
+(58, '2026-02-04 16:06:56', 1, 'login', 'usuarios', 1, '{\"rol\": \"admin\"}'),
+(59, '2026-02-04 16:07:09', 1, 'logout', 'usuarios', 1, '[]'),
+(60, '2026-02-04 16:10:42', 1, 'login', 'usuarios', 1, '{\"rol\": \"admin\"}'),
+(61, '2026-02-04 16:10:51', 1, 'logout', 'usuarios', 1, '[]'),
+(62, '2026-02-04 16:13:40', 1, 'login', 'usuarios', 1, '{\"rol\": \"admin\"}'),
+(63, '2026-02-04 16:13:50', 1, 'logout', 'usuarios', 1, '[]'),
+(64, '2026-02-04 16:17:10', 1, 'login', 'usuarios', 1, '{\"rol\": \"admin\"}'),
+(65, '2026-02-04 16:17:18', 1, 'update', 'aulas', 4, '{\"estado\": \"disponible\"}'),
+(66, '2026-02-04 16:17:23', 1, 'update', 'aulas', 7, '{\"estado\": \"disponible\"}'),
+(67, '2026-02-04 16:20:26', 1, 'logout', 'usuarios', 1, '[]'),
+(68, '2026-02-04 16:22:34', 1, 'login', 'usuarios', 1, '{\"rol\": \"admin\"}'),
+(69, '2026-02-04 16:23:30', 1, 'logout', 'usuarios', 1, '[]'),
+(70, '2026-02-04 16:23:39', 19, 'login', 'usuarios', 19, '{\"rol\": \"usuario\"}'),
+(71, '2026-02-04 16:24:08', 1, 'login', 'usuarios', 1, '{\"rol\": \"admin\"}'),
+(72, '2026-02-04 16:24:13', 1, 'logout', 'usuarios', 1, '[]'),
+(73, '2026-02-04 16:24:28', 2, 'login', 'usuarios', 2, '{\"rol\": \"encargado\"}'),
+(74, '2026-02-04 16:27:29', 2, 'logout', 'usuarios', 2, '[]'),
+(75, '2026-02-04 16:36:49', 19, 'login', 'usuarios', 19, '{\"rol\": \"usuario\"}'),
+(76, '2026-02-04 16:45:14', 19, 'logout', 'usuarios', 19, '[]'),
+(77, '2026-02-04 16:45:16', 1, 'login', 'usuarios', 1, '{\"rol\": \"admin\"}'),
+(78, '2026-02-04 16:45:26', 1, 'update', 'aulas', 5, '{\"estado\": \"mantenimiento\"}'),
+(79, '2026-02-04 16:45:44', 1, 'logout', 'usuarios', 1, '[]'),
+(80, '2026-02-04 16:45:49', 2, 'login', 'usuarios', 2, '{\"rol\": \"encargado\"}'),
+(81, '2026-02-04 16:46:07', 2, 'logout', 'usuarios', 2, '[]'),
+(82, '2026-02-04 16:46:12', 19, 'login', 'usuarios', 19, '{\"rol\": \"usuario\"}'),
+(83, '2026-02-04 16:48:06', 19, 'logout', 'usuarios', 19, '[]'),
+(84, '2026-02-04 16:48:11', 1, 'login', 'usuarios', 1, '{\"rol\": \"admin\"}'),
+(85, '2026-02-04 16:52:04', 1, 'logout', 'usuarios', 1, '[]'),
+(86, '2026-02-04 16:52:06', 19, 'login', 'usuarios', 19, '{\"rol\": \"usuario\"}'),
+(87, '2026-02-04 16:56:21', 19, 'logout', 'usuarios', 19, '[]'),
+(88, '2026-02-04 16:56:30', 2, 'login', 'usuarios', 2, '{\"rol\": \"encargado\"}'),
+(89, '2026-02-04 16:59:45', 2, 'logout', 'usuarios', 2, '[]'),
+(90, '2026-02-04 16:59:47', 2, 'login', 'usuarios', 2, '{\"rol\": \"encargado\"}'),
+(91, '2026-02-04 17:02:52', 2, 'logout', 'usuarios', 2, '[]'),
+(92, '2026-02-04 17:03:42', 2, 'login', 'usuarios', 2, '{\"rol\": \"encargado\"}'),
+(93, '2026-02-04 17:04:17', 2, 'logout', 'usuarios', 2, '[]'),
+(94, '2026-02-04 17:04:21', 1, 'login', 'usuarios', 1, '{\"rol\": \"admin\"}'),
+(95, '2026-02-04 17:04:33', 1, 'create', 'aulas', 9, '{\"codigo\": \"A-6\", \"estado\": \"disponible\", \"nombre\": \"hola\", \"capacidad\": 2}'),
+(96, '2026-02-04 17:04:48', 1, 'logout', 'usuarios', 1, '[]'),
+(97, '2026-02-04 17:04:52', 19, 'login', 'usuarios', 19, '{\"rol\": \"usuario\"}'),
+(98, '2026-02-04 17:04:56', 19, 'logout', 'usuarios', 19, '[]'),
+(99, '2026-02-04 17:04:58', 2, 'login', 'usuarios', 2, '{\"rol\": \"encargado\"}'),
+(100, '2026-02-04 17:09:39', 2, 'logout', 'usuarios', 2, '[]'),
+(101, '2026-02-04 17:09:49', 2, 'login', 'usuarios', 2, '{\"rol\": \"encargado\"}'),
+(102, '2026-02-04 17:10:02', 2, 'logout', 'usuarios', 2, '[]'),
+(103, '2026-02-04 17:10:07', 1, 'login', 'usuarios', 1, '{\"rol\": \"admin\"}'),
+(104, '2026-02-04 17:10:12', 1, 'logout', 'usuarios', 1, '[]'),
+(105, '2026-02-04 17:10:23', 2, 'login', 'usuarios', 2, '{\"rol\": \"encargado\"}'),
+(106, '2026-02-04 17:11:27', 2, 'logout', 'usuarios', 2, '[]'),
+(107, '2026-02-04 17:11:30', 1, 'login', 'usuarios', 1, '{\"rol\": \"admin\"}'),
+(108, '2026-02-04 17:12:11', 1, 'logout', 'usuarios', 1, '[]'),
+(109, '2026-02-04 17:12:17', 2, 'login', 'usuarios', 2, '{\"rol\": \"encargado\"}'),
+(110, '2026-02-04 17:15:46', 2, 'logout', 'usuarios', 2, '[]'),
+(111, '2026-02-04 17:21:51', 2, 'login', 'usuarios', 2, '{\"rol\": \"encargado\"}'),
+(112, '2026-02-04 17:21:53', 2, 'logout', 'usuarios', 2, '[]'),
+(113, '2026-02-04 17:22:02', 19, 'login', 'usuarios', 19, '{\"rol\": \"usuario\"}'),
+(114, '2026-02-04 17:31:16', 19, 'logout', 'usuarios', 19, '[]');
 
 -- --------------------------------------------------------
 
@@ -110,10 +176,11 @@ CREATE TABLE `aulas` (
 --
 
 INSERT INTO `aulas` (`id`, `codigo`, `nombre`, `capacidad`, `estado`) VALUES
-(4, 'A-1', 'Aula A-1', 10, 'mantenimiento'),
-(5, 'A-2', 'Aula A-2', 8, 'disponible'),
-(7, 'A-4', 'hola', 10, 'mantenimiento'),
-(8, 'A-5', 'aula 4', 10, 'disponible');
+(4, 'A-1', 'Aula A-1', 10, 'disponible'),
+(5, 'A-2', 'Aula A-2', 8, 'mantenimiento'),
+(7, 'A-4', 'hola', 10, 'disponible'),
+(8, 'A-5', 'aula 4', 10, 'disponible'),
+(9, 'A-6', 'hola', 2, 'disponible');
 
 -- --------------------------------------------------------
 
@@ -263,7 +330,9 @@ CREATE TABLE `usuarios` (
 
 INSERT INTO `usuarios` (`id`, `nombres`, `apellidos`, `nombre_usuario`, `cedula`, `correo`, `telefono`, `password_hash`, `rol_id`, `activo`, `creado_en`, `actualizado_en`) VALUES
 (1, 'admin', 'admin', 'admin', '0000000000', 'admin@espe.edu.ec', '0000000000', '$2y$10$1/HPVf8oBaBs9YZSRI8FOe4UNigRIq7J/rJ89aXn1n3DrUGP8AZES', 1, 1, '2026-02-03 13:39:17', NULL),
-(2, 'encargado', 'encargado', 'encargado', '0000000001', 'encargado@espe.edu.ec', '0000000001', '$2y$10$JU2c/dpe6jG5GNCaAZ4rue/j1ZaGGr6OQlYb8Ruytql7ZbrC7F3Z2', 2, 1, '2026-02-03 13:39:17', NULL);
+(2, 'encargado', 'encargado', 'encargado', '0000000001', 'encargado@espe.edu.ec', '0000000001', '$2y$10$JU2c/dpe6jG5GNCaAZ4rue/j1ZaGGr6OQlYb8Ruytql7ZbrC7F3Z2', 2, 1, '2026-02-03 13:39:17', NULL),
+(3, 'usuario', 'prueba', 'usuario1', '0000000002', 'usuario1@espe.edu.ec', '0000000002', '$2y$10$9cGQ8c3jzH8DqJm9xRrjzO2d0oM9oB6m0q2Qe3VQp6gZpA8kq6k4u', 3, 1, '2026-02-04 10:42:41', NULL),
+(19, 'juan', 'felipe', 'jf2', '0000000004', 'jf2@espe.edu.ec', '0999999992', '$2y$10$H4eZ/keYpskkaA.BA4eDD.c7iKRND34XNCdfIBUEwuKAiRkFdkd.i', 3, 1, '2026-02-04 16:23:16', NULL);
 
 --
 -- Índices para tablas volcadas
@@ -344,13 +413,13 @@ ALTER TABLE `usuarios`
 -- AUTO_INCREMENT de la tabla `auditoria`
 --
 ALTER TABLE `auditoria`
-  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=49;
+  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=115;
 
 --
 -- AUTO_INCREMENT de la tabla `aulas`
 --
 ALTER TABLE `aulas`
-  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=9;
+  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=10;
 
 --
 -- AUTO_INCREMENT de la tabla `franjas`
