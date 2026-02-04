@@ -14,7 +14,6 @@
     });
 
     if (res.status === 401) return null;
-
     const data = await res.json().catch(() => null);
     if (!data || !data.ok) throw new Error((data && data.error) || "error");
     return data;
@@ -28,12 +27,11 @@
       method: "POST",
       headers: { "Content-Type": "application/json", Accept: "application/json" },
       credentials: "include",
-      cache: "no-store",
       body: JSON.stringify(body || {}),
+      cache: "no-store",
     });
 
     if (res.status === 401) return null;
-
     const data = await res.json().catch(() => null);
     if (!data || !data.ok) throw new Error((data && data.error) || "error");
     return data;
@@ -47,36 +45,15 @@
       .replaceAll('"', "&quot;");
   }
 
-  function dateISO(d) {
-    const x = new Date(d);
-    const y = x.getFullYear();
-    const m = String(x.getMonth() + 1).padStart(2, "0");
-    const day = String(x.getDate()).padStart(2, "0");
-    return `${y}-${m}-${day}`;
-  }
-
-  function nombreDiaES(iso) {
-    const [y, m, d] = iso.split("-").map(Number);
-    const dt = new Date(y, m - 1, d);
-    const dias = ["domingo", "lunes", "martes", "miércoles", "jueves", "viernes", "sábado"];
-    return dias[dt.getDay()];
-  }
-
   function setUserUI(me) {
-    const nombre = $("#nombre-usuario");
-    const avatar = $("#avatar-usuario");
-    const rol = $("#rol-usuario") || $(".usuario-rol");
-
     const full = `${me.nombres || ""} ${me.apellidos || ""}`.trim() || me.nombre_usuario || "usuario";
-    if (nombre) nombre.textContent = full;
-    if (rol) rol.textContent = me.rol || "encargado";
-    if (avatar) avatar.textContent = (full[0] || "E").toUpperCase();
+    $("#nombre-usuario") && ($("#nombre-usuario").textContent = full);
+    $("#rol-usuario") && ($("#rol-usuario").textContent = me.rol || "encargado");
+    $("#avatar-usuario") && ($("#avatar-usuario").textContent = (full[0] || "E").toUpperCase());
   }
 
   async function doLogout() {
-    try {
-      await apiPOST("logout", {});
-    } catch {}
+    try { await apiPOST("logout", {}); } catch {}
     window.location.href = "../index.html";
   }
 
@@ -96,7 +73,10 @@
   }
 
   function bindNav() {
-    $("#btn-inicio")?.addEventListener("click", () => showSection("seccion-inicio"));
+    $("#btn-inicio")?.addEventListener("click", async () => {
+      showSection("seccion-inicio");
+      await loadKpis();
+    });
 
     $("#btn-horarios")?.addEventListener("click", async () => {
       showSection("seccion-horarios");
@@ -112,54 +92,50 @@
 
     $("#btn-multas")?.addEventListener("click", async () => {
       showSection("seccion-multas");
-      await loadMultasTableSafe();
+      await loadMultasTable();
     });
   }
 
-  // =========================
-  // kpis (robusto: no rompe si falta multas/checkins)
-  // =========================
-  async function loadKpisSafe() {
-    try {
-      const rep = await apiGET("reportes_list");
-      const reportes = rep?.reportes || [];
-      const total = reportes.length;
-      const pend = reportes.filter((r) => String(r.estado).toLowerCase() !== "resuelto").length;
-      if ($("#kpi-reportes-total")) $("#kpi-reportes-total").textContent = String(total);
-      if ($("#kpi-reportes-pend")) $("#kpi-reportes-pend").textContent = String(pend);
-    } catch {
-      if ($("#kpi-reportes-total")) $("#kpi-reportes-total").textContent = "0";
-      if ($("#kpi-reportes-pend")) $("#kpi-reportes-pend").textContent = "0";
-    }
-
-    // checkins: depende de reservas_list scope=all
-    try {
-      const rr = await apiGET("reservas_list", { scope: "all" });
-      const reservas = rr?.reservas || [];
-      const checkins = reservas.filter((x) => Number(x.checkin_validado) === 1).length;
-      if ($("#kpi-checkins")) $("#kpi-checkins").textContent = String(checkins);
-    } catch {
-      if ($("#kpi-checkins")) $("#kpi-checkins").textContent = "0";
-    }
-
-    // multas: si no existe endpoint, no rompe
-    try {
-      const m = await apiGET("multas_list");
-      const rows = m?.multas || [];
-      if ($("#kpi-multas")) $("#kpi-multas").textContent = String(rows.length);
-    } catch {
-      if ($("#kpi-multas")) $("#kpi-multas").textContent = "0";
-    }
+  // ====== fechas ======
+  function dateISO(d) {
+    const x = new Date(d);
+    const y = x.getFullYear();
+    const m = String(x.getMonth() + 1).padStart(2, "0");
+    const day = String(x.getDate()).padStart(2, "0");
+    return `${y}-${m}-${day}`;
   }
 
-  // =========================
-  // disponibilidad (solo hoy, igual admin)
-  // =========================
+  function nombreDiaES(iso) {
+    const [y, m, d] = iso.split("-").map(Number);
+    const dt = new Date(y, m - 1, d);
+    const dias = ["domingo","lunes","martes","miércoles","jueves","viernes","sábado"];
+    return dias[dt.getDay()];
+  }
+
+  // ====== kpis ======
+  async function loadKpis() {
+    const rep = await apiGET("reportes_list");
+    const multas = await apiGET("multas_list");
+    const rr = await apiGET("reservas_list", { scope: "all" });
+
+    const reportes = rep?.reportes || [];
+    const multasRows = multas?.multas || [];
+    const reservas = rr?.reservas || [];
+
+    const total = reportes.length;
+    const pend = reportes.filter((r) => String(r.estado).toLowerCase() !== "resuelto").length;
+    const checkins = reservas.filter((x) => Number(x.checkin_validado) === 1).length;
+
+    $("#kpi-reportes-total") && ($("#kpi-reportes-total").textContent = String(total));
+    $("#kpi-reportes-pend") && ($("#kpi-reportes-pend").textContent = String(pend));
+    $("#kpi-multas") && ($("#kpi-multas").textContent = String(multasRows.length));
+    $("#kpi-checkins") && ($("#kpi-checkins").textContent = String(checkins));
+  }
+
+  // ====== disponibilidad (tipo admin, SOLO HOY) ======
   function buildReservaIndex(reservas) {
     const map = new Map(); // fecha|aula_id|franja_id
-    (reservas || []).forEach((r) => {
-      map.set(`${r.fecha}|${r.aula_id}|${r.franja_id}`, r);
-    });
+    (reservas || []).forEach((r) => map.set(`${r.fecha}|${r.aula_id}|${r.franja_id}`, r));
     return map;
   }
 
@@ -172,19 +148,16 @@
     if (!cont) return;
 
     const hoy = dateISO(new Date());
-
-    const p = $("#texto-filtro-actual");
-    if (p) p.textContent = `vista: hoy (${hoy})`;
+    $("#texto-filtro-actual") && ($("#texto-filtro-actual").textContent = `vista: hoy (${hoy})`);
 
     cont.innerHTML = "cargando...";
 
     const data = await apiGET("disponibilidad", { from: hoy, to: hoy });
-
     let aulas = data.aulas || [];
     const franjas = data.franjas || [];
     const idx = buildReservaIndex(data.reservas || []);
-    const aulaFiltro = getAulaFilterId();
 
+    const aulaFiltro = getAulaFilterId();
     if (aulaFiltro) aulas = aulas.filter((a) => Number(a.id) === aulaFiltro);
 
     if (aulas.length === 0) {
@@ -198,8 +171,6 @@
 
     cont.innerHTML = "";
 
-    const diaISO = hoy;
-
     const bloque = document.createElement("div");
     bloque.className = "dia-bloque";
 
@@ -207,10 +178,10 @@
     header.className = "dia-bloque-header";
 
     const h3 = document.createElement("h3");
-    h3.textContent = nombreDiaES(diaISO);
+    h3.textContent = nombreDiaES(hoy);
 
     const span = document.createElement("span");
-    span.textContent = diaISO;
+    span.textContent = hoy;
 
     header.appendChild(h3);
     header.appendChild(span);
@@ -252,7 +223,7 @@
           return;
         }
 
-        const k = `${diaISO}|${a.id}|${f.id}`;
+        const k = `${hoy}|${a.id}|${f.id}`;
         const r = idx.get(k);
 
         if (r) {
@@ -264,9 +235,7 @@
             cell.classList.add("ocupado");
             cell.textContent = "reservado";
           }
-          // tooltip útil
-          const u = r.usuario ? `usuario: ${r.usuario}` : "";
-          cell.title = [u, r.codigo_checkin ? `código: ${r.codigo_checkin}` : ""].filter(Boolean).join("\n");
+          cell.title = `usuario: ${r.usuario}\ncódigo: ${r.codigo_checkin || ""}`;
         } else {
           cell.classList.add("disponible");
           cell.textContent = "disponible";
@@ -286,26 +255,38 @@
 
     const r = await apiGET("aulas_list");
     const aulas = r.aulas || [];
-
     sel.innerHTML =
       `<option value="0">todas</option>` +
       aulas.map((a) => `<option value="${a.id}">${escapeHtml(a.nombre)} (${escapeHtml(a.codigo)})</option>`).join("");
   }
 
-  // =========================
-  // reportes (mejorados pero simples)
-  // =========================
+  // ====== reportes ======
   function badgeEstado(estado) {
     const s = String(estado || "").toLowerCase();
     if (s === "resuelto") return `<span class="badge-mini badge-resuelto">resuelto</span>`;
     return `<span class="badge-mini badge-pendiente">pendiente</span>`;
   }
 
+  let multaCtx = { reporte_id: 0, usuario_id: 0, usuario: "", aula: "" };
+
+  function openModalMulta(ctx) {
+    multaCtx = ctx;
+    $("#multa-contexto").textContent = `reporte #${ctx.reporte_id} · ${ctx.usuario} · ${ctx.aula}`;
+    $("#multa-motivo").value = "";
+    $("#multa-gravedad").value = "baja";
+    $("#multa-monto").value = "";
+    $("#overlay-modal").classList.remove("oculto");
+    $("#modal-multa").classList.remove("oculto");
+  }
+
+  function closeModalMulta() {
+    $("#overlay-modal").classList.add("oculto");
+    $("#modal-multa").classList.add("oculto");
+  }
+
   async function loadReportesTable() {
     const tbody = $("#tbody-reportes");
     if (!tbody) return;
-
-    tbody.innerHTML = `<tr><td colspan="6" class="nota">cargando...</td></tr>`;
 
     const filtroEstado = $("#filtro-estado")?.value || "todos";
     const filtroTexto = ($("#filtro-texto")?.value || "").trim().toLowerCase();
@@ -313,9 +294,7 @@
     const r = await apiGET("reportes_list");
     let rows = r.reportes || [];
 
-    if (filtroEstado !== "todos") {
-      rows = rows.filter((x) => String(x.estado).toLowerCase() === filtroEstado);
-    }
+    if (filtroEstado !== "todos") rows = rows.filter((x) => String(x.estado).toLowerCase() === filtroEstado);
     if (filtroTexto) {
       rows = rows.filter((x) => {
         const s = `${x.reportante} ${x.aula} ${x.descripcion} ${x.gravedad}`.toLowerCase();
@@ -323,50 +302,72 @@
       });
     }
 
-    if (rows.length === 0) {
-      tbody.innerHTML = `<tr><td colspan="6" class="nota">sin reportes</td></tr>`;
-      return;
-    }
+    tbody.innerHTML = rows.map((x) => {
+      const estado = String(x.estado || "").toLowerCase();
+      const acciones = estado === "resuelto"
+        ? `<span class="texto-filtro">—</span>`
+        : `<div class="acciones">
+             <button class="btn-secundario btn-accion-pequeno"
+               data-multa="${x.id}"
+               data-uid="${x.reportante_id}"
+               data-user="${escapeHtml(x.reportante)}"
+               data-aula="${escapeHtml(x.aula)}">multa</button>
+             <button class="btn-primario btn-accion-pequeno" data-res="${x.id}">resolver</button>
+           </div>`;
 
-    tbody.innerHTML = rows
-      .map((x) => {
-        const estado = String(x.estado || "").toLowerCase();
-        const acciones =
-          estado === "resuelto"
-            ? `<span class="texto-filtro">—</span>`
-            : `<div class="acciones">
-                 <button class="btn-primario btn-accion-pequeno" data-res="${x.id}">resolver</button>
-               </div>`;
-
-        return `
-          <tr>
-            <td>${escapeHtml(x.fecha)}</td>
-            <td>${escapeHtml(x.reportante)}</td>
-            <td>${escapeHtml(x.aula)}</td>
-            <td>${escapeHtml(x.gravedad)}</td>
-            <td>${badgeEstado(x.estado)}</td>
-            <td>${acciones}</td>
-          </tr>
-        `;
-      })
-      .join("");
+      return `
+        <tr>
+          <td>${escapeHtml(x.fecha)}</td>
+          <td>${escapeHtml(x.reportante)}</td>
+          <td>${escapeHtml(x.aula)}</td>
+          <td>${escapeHtml(x.gravedad)}</td>
+          <td>${badgeEstado(x.estado)}</td>
+          <td>${acciones}</td>
+        </tr>
+      `;
+    }).join("");
 
     tbody.querySelectorAll("[data-res]").forEach((b) => {
       b.addEventListener("click", async () => {
         const id = Number(b.getAttribute("data-res"));
-        try {
-          await apiPOST("reportes_resolver", { id });
-          await refreshAll();
-        } catch (e) {
-          alert(e.message || "error");
-        }
+        await apiPOST("reportes_resolver", { id });
+        await refreshAll();
+      });
+    });
+
+    tbody.querySelectorAll("[data-multa]").forEach((b) => {
+      b.addEventListener("click", () => {
+        const reporte_id = Number(b.getAttribute("data-multa"));
+        const usuario_id = Number(b.getAttribute("data-uid"));
+        const usuario = b.getAttribute("data-user") || "";
+        const aula = b.getAttribute("data-aula") || "";
+        if (!reporte_id || !usuario_id) return alert("no se pudo obtener el usuario_id del reporte");
+        openModalMulta({ reporte_id, usuario_id, usuario, aula });
       });
     });
   }
 
-  // =========================
-  // check-in (si existe endpoint)
-  // =========================
+  // ====== multas ======
+  async function loadMultasTable() {
+    const tbody = $("#tbody-multas");
+    if (!tbody) return;
+
+    const r = await apiGET("multas_list");
+    const rows = r.multas || [];
+
+    tbody.innerHTML = rows.map((m) => `
+      <tr>
+        <td>${escapeHtml(m.fecha)}</td>
+        <td>${escapeHtml(m.usuario)}</td>
+        <td>${escapeHtml(m.motivo)}</td>
+        <td>${escapeHtml(m.gravedad)}</td>
+        <td>${escapeHtml(m.monto)}</td>
+        <td>${escapeHtml(m.emitida_por)}</td>
+      </tr>
+    `).join("");
+  }
+
+  // ====== checkin ======
   async function validateCheckin() {
     const input = $("#input-codigo-checkin");
     const box = $("#resultado-checkin");
@@ -381,13 +382,12 @@
     try {
       const r = await apiPOST("checkin_validate", { codigo });
       box.innerHTML = r.ya_validado
-        ? `<p class="nota">ya estaba validado</p>`
-        : `<p class="nota">validado correctamente</p>`;
+        ? `<p class="nota ok">ya estaba validado</p>`
+        : `<p class="nota ok">validado correctamente</p>`;
       input.value = "";
       await refreshAll();
     } catch (e) {
-      // si el endpoint no existe, no rompemos la app
-      box.innerHTML = `<p class="nota">${escapeHtml(e.message || "no disponible")}</p>`;
+      box.innerHTML = `<p class="nota err">${escapeHtml(e.message || "error")}</p>`;
     }
   }
 
@@ -398,42 +398,10 @@
     });
   }
 
-  // =========================
-  // multas (safe: si no existe endpoint)
-  // =========================
-  async function loadMultasTableSafe() {
-    const tbody = $("#tbody-multas");
-    if (!tbody) return;
-
-    try {
-      const r = await apiGET("multas_list");
-      const rows = r.multas || [];
-      if (rows.length === 0) {
-        tbody.innerHTML = `<tr><td colspan="5" class="nota">sin multas</td></tr>`;
-        return;
-      }
-      tbody.innerHTML = rows
-        .map(
-          (m) => `
-        <tr>
-          <td>${escapeHtml(m.fecha)}</td>
-          <td>${escapeHtml(m.usuario)}</td>
-          <td>${escapeHtml(m.motivo)}</td>
-          <td>${escapeHtml(m.gravedad)}</td>
-          <td>${escapeHtml(m.monto)}</td>
-        </tr>
-      `
-        )
-        .join("");
-    } catch {
-      tbody.innerHTML = `<tr><td colspan="5" class="nota">módulo de multas no implementado en api.php</td></tr>`;
-    }
-  }
-
-  // =========================
-  // filtros
-  // =========================
   function bindFilters() {
+    $("#btn-refrescar-horarios")?.addEventListener("click", renderDisponibilidadHoy);
+    $("#filtro-aula-horarios")?.addEventListener("change", renderDisponibilidadHoy);
+
     $("#btn-refrescar-reportes")?.addEventListener("click", loadReportesTable);
     $("#filtro-estado")?.addEventListener("change", loadReportesTable);
     $("#filtro-texto")?.addEventListener("input", () => {
@@ -441,25 +409,46 @@
       bindFilters._t = setTimeout(loadReportesTable, 250);
     });
 
-    $("#btn-refrescar-horarios")?.addEventListener("click", renderDisponibilidadHoy);
-    $("#filtro-aula-horarios")?.addEventListener("change", renderDisponibilidadHoy);
+    $("#btn-cerrar-multa")?.addEventListener("click", closeModalMulta);
+    $("#btn-cancelar-multa")?.addEventListener("click", closeModalMulta);
+    $("#overlay-modal")?.addEventListener("click", closeModalMulta);
+
+    $("#btn-emitir-multa")?.addEventListener("click", async () => {
+      const motivo = ($("#multa-motivo")?.value || "").trim();
+      const gravedad = ($("#multa-gravedad")?.value || "baja").trim();
+      const monto = Number($("#multa-monto")?.value || 0);
+
+      if (!motivo || monto <= 0 || !multaCtx.reporte_id || !multaCtx.usuario_id) {
+        alert("completa motivo y monto");
+        return;
+      }
+
+      await apiPOST("multas_create", {
+        reporte_id: multaCtx.reporte_id,
+        usuario_id: multaCtx.usuario_id,
+        motivo,
+        gravedad,
+        monto,
+      });
+
+      closeModalMulta();
+      await refreshAll();
+      alert("multa emitida");
+    });
   }
 
   async function refreshAll() {
     await Promise.allSettled([
-      loadKpisSafe(),
+      loadKpis(),
       loadReportesTable(),
-      loadMultasTableSafe(),
+      loadMultasTable(),
       renderDisponibilidadHoy(),
     ]);
   }
 
   async function init() {
     const meRes = await apiGET("me");
-    if (!meRes) {
-      window.location.href = "../index.html";
-      return;
-    }
+    if (!meRes) return (window.location.href = "../index.html");
 
     setUserUI(meRes.me);
     bindLogout();
@@ -468,9 +457,6 @@
     bindFilters();
 
     await loadAulasForFiltro();
-
-    // arranque: panel inicio
-    showSection("seccion-inicio");
     await refreshAll();
   }
 

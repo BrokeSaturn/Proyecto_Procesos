@@ -202,3 +202,98 @@
   background-color: white;
   cursor: pointer;
 }
+/* Estilos para las cards de reservas */
+.card-reserva {
+  background: white;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  padding: 1rem;
+  margin-bottom: 1rem;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.card-reserva-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 1rem;
+  padding-bottom: 0.75rem;
+  border-bottom: 1px solid #eee;
+}
+
+.card-reserva-header h4 {
+  margin: 0;
+  color: #2c3e50;
+}
+
+.fecha-reserva {
+  color: #666;
+  font-size: 0.9rem;
+  margin-top: 0.25rem;
+}
+
+.card-reserva-body {
+  margin-bottom: 1rem;
+}
+
+.info-reserva {
+  display: grid;
+  gap: 0.5rem;
+}
+
+.info-reserva div {
+  display: flex;
+  justify-content: space-between;
+}
+
+.card-reserva-footer {
+  text-align: right;
+  padding-top: 0.75rem;
+  border-top: 1px solid #eee;
+}
+
+.badge-activa {
+  background: #d4edda;
+  color: #155724;
+  padding: 0.25rem 0.5rem;
+  border-radius: 4px;
+  font-size: 0.85rem;
+}
+
+.badge-cancelada {
+  background: #f8d7da;
+  color: #721c24;
+  padding: 0.25rem 0.5rem;
+  border-radius: 4px;
+  font-size: 0.85rem;
+}
+
+.btn-accion {
+  padding: 0.5rem 1rem;
+  font-size: 0.9rem;
+}
+
+.sin-datos {
+  text-align: center;
+  padding: 2rem;
+  color: #666;
+}
+
+.texto-pequeno {
+  font-size: 0.9rem;
+  color: #999;
+}
+
+.error-carga {
+  color: #dc3545;
+  padding: 1rem;
+  text-align: center;
+  background: #f8d7da;
+  border-radius: 4px;
+}
+
+.cargando {
+  text-align: center;
+  padding: 2rem;
+  color: #666;
+}
