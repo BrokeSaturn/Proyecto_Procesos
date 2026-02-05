@@ -296,6 +296,7 @@
   text-align: center;
   padding: 2rem;
   color: #666;
+<<<<<<< HEAD
 }
 .modal select, .modal textarea{
   border: 1px solid var(--border, #e2e8f0);
@@ -308,3 +309,6 @@
   border-color: var(--primary, #4f46e5);
   box-shadow: 0 0 0 3px rgba(79,70,229,.15);
 }
+=======
+}
+>>>>>>> 89988d9d4ca7fbf2a16428a3628335a13c805487
