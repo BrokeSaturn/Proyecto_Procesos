@@ -1,91 +1,96 @@
-/* tu base estaba bien, solo lo potencio sin romper estilo.css */
+/* encargado.css (reemplazo completo) */
+/* se carga DESPUÉS de estilo.css */
 
-.grid-2 {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
-  gap: 1rem;
+:root{
+  --ui-surface:#fff;
+  --ui-surface-2:#f8fafc;
+  --ui-border: rgba(15,23,42,.10);
+  --ui-border-2: rgba(15,23,42,.08);
+  --ui-shadow-sm: 0 6px 16px rgba(15,23,42,.06);
+  --ui-radius: 16px;
+  --ui-radius-sm: 12px;
 }
 
-.card-mini {
-  background: #fff;
-  border: 1px solid var(--color-borde-suave);
-  border-radius: var(--radio-borde);
-  padding: 1rem;
-  box-shadow: 0 6px 16px rgba(15, 23, 42, .06);
+.grid-2{
+  display:grid;
+  grid-template-columns:repeat(auto-fit,minmax(240px,1fr));
+  gap:1rem;
 }
 
-.valor {
-  font-size: 2rem;
-  font-weight: 800;
-  color: var(--color-primario);
-  margin: .25rem 0;
+.card-mini{
+  background:var(--ui-surface);
+  border:1px solid var(--ui-border-2);
+  border-radius:var(--ui-radius);
+  padding:1rem;
+  box-shadow:var(--ui-shadow-sm);
 }
 
-.input-linea {
-  display: flex;
-  flex-wrap: wrap;
-  gap: .6rem;
-  align-items: end;
-  margin-top: .75rem;
+.valor{
+  font-size:2rem;
+  font-weight:800;
+  color:var(--color-primario);
+  margin:.25rem 0;
 }
 
-.input-linea .form-grupo { flex: 1; min-width: 220px; }
+.input-linea{
+  display:flex;
+  flex-wrap:wrap;
+  gap:.75rem;
+  align-items:end;
+  margin-top:.75rem;
+}
+.input-linea .form-grupo{flex:1;min-width:220px;}
 
-/* tablas */
-.tabla-wrap {
-  margin-top: 1rem;
-  overflow: auto;
-  border-radius: var(--radio-borde);
-  border: 1px solid var(--color-borde-suave);
-  background: #fff;
+.tabla-wrap{
+  margin-top:1rem;
+  overflow:auto;
+  border-radius:var(--ui-radius);
+  border:1px solid var(--ui-border-2);
+  background:var(--ui-surface);
+  box-shadow:var(--ui-shadow-sm);
 }
 
-.tabla-simple {
-  width: 100%;
-  border-collapse: collapse;
-  min-width: 760px;
+.tabla-simple{
+  width:100%;
+  border-collapse:collapse;
+  min-width:760px;
+}
+.tabla-simple th,.tabla-simple td{
+  padding:.75rem .9rem;
+  border-bottom:1px solid var(--ui-border-2);
+  text-align:left;
+  font-size:.92rem;
+  vertical-align:top;
+}
+.tabla-simple thead th{
+  position:sticky;
+  top:0;
+  background:var(--ui-surface-2);
+  z-index:1;
 }
 
-.tabla-simple th,
-.tabla-simple td {
-  padding: .7rem .85rem;
-  border-bottom: 1px solid var(--color-borde-suave);
-  text-align: left;
-  font-size: .92rem;
-  vertical-align: top;
+.tabla-simple tbody tr:hover{background:rgba(15,23,42,.03);}
+
+.badge-mini{
+  display:inline-block;
+  padding:.22rem .6rem;
+  border-radius:999px;
+  font-size:.78rem;
+  font-weight:700;
+  border:1px solid var(--ui-border);
+  background:#fff;
+}
+.badge-pendiente{border-color:rgba(245,158,11,.35);color:#92400e;}
+.badge-resuelto{border-color:rgba(16,185,129,.35);color:#065f46;}
+
+.acciones{display:flex;flex-wrap:wrap;gap:.5rem;}
+
+.btn-accion-pequeno{
+  padding:.42rem .75rem;
+  font-size:.9rem;
+  border-radius:12px;
 }
 
-.tabla-simple thead th {
-  position: sticky;
-  top: 0;
-  background: #f8fafc;
-  z-index: 1;
-}
-
-.tabla-simple tbody tr:hover { background: #f9fafb; }
-
-.badge-mini {
-  display: inline-block;
-  padding: .18rem .55rem;
-  border-radius: 999px;
-  font-size: .75rem;
-  font-weight: 600;
-  border: 1px solid var(--color-borde-suave);
-  background: #fff;
-}
-
-.badge-pendiente { border-color: var(--color-advertencia); color: var(--color-advertencia); }
-.badge-resuelto  { border-color: var(--color-acento); color: var(--color-acento); }
-
-.acciones { display: flex; flex-wrap: wrap; gap: .45rem; }
-
-.btn-accion-pequeno {
-  padding: .32rem .7rem;
-  font-size: .85rem;
-  border-radius: .6rem;
-}
-
-/* feedback checkin */
-.nota { padding: .75rem 1rem; color: #64748b; }
-.nota.ok { color: #065f46; background: #ecfdf5; border: 1px solid #a7f3d0; border-radius: .75rem; }
-.nota.err { color: #991b1b; background: #fef2f2; border: 1px solid #fecaca; border-radius: .75rem; }
+.nota{padding:.75rem 1rem;color:var(--color-texto-suave);}
+.nota.ok{color:#065f46;background:rgba(16,185,129,.10);border:1px solid rgba(16,185,129,.25);border-radius:14px;}
+.nota.err{color:#991b1b;background:rgba(239,68,68,.08);border:1px solid rgba(239,68,68,.25);border-radius:14px;}
