@@ -30,10 +30,12 @@
     <button id="btn-semana" class="nav-btn">semana completa</button>
     <button id="btn-crear-aula" class="nav-btn nav-btn-crear">+ crear aula</button>
     <button id="btn-reportes" class="nav-btn nav-btn-reportes">reportes</button>
+    <button id="btn-multas" class="nav-btn nav-btn-admin">multas</button>
     <button id="btn-admin" class="nav-btn nav-btn-admin">panel admin</button>
   </nav>
 
   <main class="layout-principal">
+    <!-- DISPONIBILIDAD -->
     <section id="seccion-disponibilidad" class="seccion seccion-activa">
       <div class="seccion-header">
         <h2>disponibilidad de aulas</h2>
@@ -50,6 +52,7 @@
       </div>
     </section>
 
+    <!-- CREAR AULA -->
     <section id="seccion-crear-aula" class="seccion seccion-oculta">
       <div class="seccion-header">
         <h2>crear nueva aula</h2>
@@ -84,10 +87,11 @@
       <div id="panel-admin-contenido" class="panel-admin"></div>
     </section>
 
+    <!-- REPORTES -->
     <section id="seccion-reportes" class="seccion seccion-oculta">
       <div class="seccion-header">
         <h2>reportes de uso indebido</h2>
-        <p>gestión de quejas y reportes de usuarios</p>
+        <p>resolver reportes y emitir multas al infractor (dueño de la reserva)</p>
       </div>
 
       <div class="panel-estadisticas">
@@ -108,6 +112,17 @@
       <div class="lista-reportes" id="lista-reportes"></div>
     </section>
 
+    <!-- MULTAS -->
+    <section id="seccion-multas" class="seccion seccion-oculta">
+      <div class="seccion-header">
+        <h2>multas</h2>
+        <p>historial de multas emitidas</p>
+      </div>
+
+      <div id="lista-multas" class="lista-reportes"></div>
+    </section>
+
+    <!-- PANEL ADMIN -->
     <section id="seccion-admin-panel" class="seccion seccion-oculta">
       <div class="seccion-header">
         <h2>panel de administración de aulas</h2>
@@ -116,6 +131,81 @@
       <div id="panel-admin-aulas" class="panel-admin"></div>
     </section>
   </main>
+
+  <!-- MODAL ACCIÓN (resolver + multa) -->
+  <div id="overlay-accion" class="overlay oculto"></div>
+  <div id="modal-accion" class="modal oculto">
+    <div class="modal-contenido">
+      <div class="modal-header">
+        <h3>resolver reporte</h3>
+        <button id="ma-cerrar" class="btn-cerrar-modal">×</button>
+      </div>
+
+      <div class="modal-body">
+        <div class="form-crear-aula">
+          <div class="grid-form-aula">
+            <div class="form-grupo">
+              <label>reportante:</label>
+              <input id="ma-reportante" type="text" readonly>
+            </div>
+            <div class="form-grupo">
+              <label>infractor (dueño de reserva):</label>
+              <input id="ma-infractor" type="text" readonly>
+            </div>
+
+            <div class="form-grupo">
+              <label>aula:</label>
+              <input id="ma-aula" type="text" readonly>
+            </div>
+
+            <div class="form-grupo">
+              <label>fecha:</label>
+              <input id="ma-fecha" type="text" readonly>
+            </div>
+
+            <div class="form-grupo">
+              <label>gravedad:</label>
+              <select id="ma-gravedad" class="select-estado">
+                <option value="baja">baja</option>
+                <option value="media">media</option>
+                <option value="alta">alta</option>
+              </select>
+            </div>
+
+            <div class="form-grupo" style="grid-column:1 / -1;">
+              <label>descripción:</label>
+              <textarea id="ma-desc" rows="3" readonly style="width:100%;resize:vertical;"></textarea>
+            </div>
+
+            <div class="form-grupo" style="grid-column:1 / -1; display:flex; align-items:center; gap:10px;">
+              <input id="ma-aplicar-multa" type="checkbox">
+              <label for="ma-aplicar-multa" style="margin:0;">emitir multa</label>
+            </div>
+
+            <div id="ma-bloque-multa" style="grid-column:1 / -1; display:none;">
+              <div class="grid-form-aula" style="margin-top:.25rem;">
+                <div class="form-grupo">
+                  <label>monto ($):</label>
+                  <input id="ma-monto" type="number" step="0.01" min="0" placeholder="ej: 5.00">
+                </div>
+                <div class="form-grupo" style="grid-column:1 / -1;">
+                  <label>motivo:</label>
+                  <textarea id="ma-motivo" rows="3" placeholder="detalle de la multa..." style="width:100%;resize:vertical;"></textarea>
+                </div>
+              </div>
+            </div>
+
+            <div id="ma-msg" class="error-mensaje" style="display:none; grid-column:1 / -1;"></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="modal-footer">
+        <button id="ma-guardar" class="btn-primario">guardar</button>
+        <button id="ma-cancelar" class="btn-secundario">cancelar</button>
+      </div>
+    </div>
+  </div>
 
   <script type="module">
     import { requireAuth, startIdleLogout } from "../js/guard.js";

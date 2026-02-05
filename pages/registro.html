@@ -1,0 +1,134 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8" />
+  <title>registro - sistema espe</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <link href="../css/login.css" rel="stylesheet" type="text/css" />
+  <meta http-equiv="Cache-Control" content="no-store, no-cache, must-revalidate, max-age=0" />
+  <meta http-equiv="Pragma" content="no-cache" />
+  <meta http-equiv="Expires" content="0" />
+</head>
+
+<body class="login-container">
+<header class="login-header rg-header">
+  <h1>crea tu cuenta para acceder al sistema</h1>
+</header>
+
+
+  <main class="login-main">
+    <div class="login-card">
+      <h2>crear cuenta</h2>
+
+<style>
+  /* solo afecta a registro.html */
+  .rg-grid{
+    display:grid;
+    grid-template-columns: 1fr;
+    gap: 12px;
+    margin-top: 10px;
+  }
+  @media (min-width: 820px){
+    .rg-grid{ grid-template-columns: 1fr 1fr; gap: 14px 18px; }
+    .rg-span-2{ grid-column: 1 / -1; }
+  }
+
+  /* mejora visual sin tocar tu css global */
+  .login-card{ max-width: 820px; }
+  .form-grupo-login{ margin-bottom: 0; }
+  .rg-actions{
+    display:flex;
+    gap: 10px;
+    align-items:center;
+    justify-content: space-between;
+    margin-top: 14px;
+  }
+  @media (max-width: 520px){
+    .rg-actions{ flex-direction: column; align-items: stretch; }
+  }
+  .rg-link{
+    text-align:center;
+    text-decoration: underline;
+    color: inherit;
+    display:inline-block;
+  }
+  .rg-header h1{
+    font-size: 28px;
+    font-weight: 700;
+    text-transform: lowercase;
+    letter-spacing: .5px;
+  }
+
+  .rg-header p{
+    margin-top: 4px;
+    font-size: 14px;
+    color: #64748b;
+  }
+
+
+</style>
+
+<form id="form-registro" autocomplete="off">
+  <div class="rg-grid">
+    <div class="form-grupo-login">
+      <label for="rg-nombres">nombres:</label>
+      <input id="rg-nombres" type="text" class="login-input" placeholder="ej: juan" required />
+    </div>
+
+    <div class="form-grupo-login">
+      <label for="rg-apellidos">apellidos:</label>
+      <input id="rg-apellidos" type="text" class="login-input" placeholder="ej: pérez" required />
+    </div>
+
+    <div class="form-grupo-login">
+      <label for="rg-usuario">nombre de usuario:</label>
+      <input id="rg-usuario" type="text" class="login-input" placeholder="ej: juanp" required />
+    </div>
+
+    <div class="form-grupo-login">
+      <label for="rg-cedula">cédula:</label>
+      <input id="rg-cedula" type="text" class="login-input" placeholder="10 dígitos" required />
+    </div>
+
+    <div class="form-grupo-login rg-span-2">
+      <label for="rg-correo">correo institucional:</label>
+      <input id="rg-correo" type="email" class="login-input" placeholder="usuario@espe.edu.ec" required />
+    </div>
+
+    <div class="form-grupo-login">
+      <label for="rg-telefono">teléfono:</label>
+      <input id="rg-telefono" type="text" class="login-input" placeholder="ej: 0999999999" required />
+    </div>
+
+    <div class="form-grupo-login">
+      <label for="rg-pass">contraseña:</label>
+      <input id="rg-pass" type="password" class="login-input" placeholder="mínimo 6 caracteres" required />
+    </div>
+
+    <div class="form-grupo-login">
+      <label for="rg-pass2">confirmar contraseña:</label>
+      <input id="rg-pass2" type="password" class="login-input" placeholder="repita la contraseña" required />
+    </div>
+
+    <div id="rg-error" class="error-mensaje rg-span-2" style="display:none;"></div>
+
+    <div class="rg-span-2 rg-actions">
+      <button type="submit" class="btn-login" id="btn-registrar">registrarme</button>
+    </div>
+  </div>
+</form>
+
+
+      <div style="margin-top:10px;text-align:center;">
+        <a href="../index.html" style="color:inherit;text-decoration:underline;">volver al login</a>
+      </div>
+    </div>
+  </main>
+
+  <footer class="login-footer">
+    <p>sistema de gestión de aulas de biblioteca - universidad de las fuerzas armadas espe</p>
+  </footer>
+
+  <script src="../js/registro.js" defer></script>
+</body>
+</html>

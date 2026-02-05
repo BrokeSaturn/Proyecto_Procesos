@@ -1,6 +1,9 @@
 (function () {
   const $ = (s) => document.querySelector(s);
 
+  // =========================
+  // API BASE (api.php)
+  // =========================
   async function apiGET(action, qs = {}) {
     const url = new URL("../server/api.php", window.location.href);
     url.searchParams.set("action", action);
@@ -36,6 +39,47 @@
     return data;
   }
 
+  // =========================
+  // REPORTES (reporte.php)
+  // =========================
+  async function repGET(action, qs = {}) {
+    const url = new URL("../server/reporte.php", window.location.href);
+    url.searchParams.set("action", action);
+    Object.entries(qs || {}).forEach(([k, v]) => url.searchParams.set(k, v));
+
+    const res = await fetch(url.toString(), {
+      method: "GET",
+      credentials: "include",
+      cache: "no-store",
+      headers: { Accept: "application/json" },
+    });
+
+    if (res.status === 401) return null;
+    const data = await res.json().catch(() => null);
+    if (!data || !data.ok) throw new Error((data && data.error) || "error");
+    return data;
+  }
+
+  async function repPOST(action, body) {
+    const url = new URL("../server/reporte.php", window.location.href);
+    url.searchParams.set("action", action);
+
+    const res = await fetch(url.toString(), {
+      method: "POST",
+      headers: { "Content-Type": "application/json", Accept: "application/json" },
+      credentials: "include",
+      body: JSON.stringify(body || {}),
+    });
+
+    if (res.status === 401) return null;
+    const data = await res.json().catch(() => null);
+    if (!data || !data.ok) throw new Error((data && data.error) || "error");
+    return data;
+  }
+
+  // =========================
+  // UI helpers
+  // =========================
   function escapeHtml(s) {
     return String(s ?? "")
       .replaceAll("&", "&amp;")
@@ -70,21 +114,69 @@
   function nombreDiaES(iso) {
     const [y, m, d] = iso.split("-").map(Number);
     const dt = new Date(y, m - 1, d);
-    const dias = ["domingo","lunes","martes","miércoles","jueves","viernes","sábado"];
+    const dias = ["domingo", "lunes", "martes", "miércoles", "jueves", "viernes", "sábado"];
     return dias[dt.getDay()];
   }
 
+  // Toast flotante (sin alert)
+  let toastTimer = null;
+  function ensureToast() {
+    let el = document.getElementById("toast-ui");
+    if (el) return el;
+
+    el = document.createElement("div");
+    el.id = "toast-ui";
+    el.style.position = "fixed";
+    el.style.right = "18px";
+    el.style.bottom = "18px";
+    el.style.zIndex = "9999";
+    el.style.minWidth = "260px";
+    el.style.maxWidth = "360px";
+    el.style.padding = "12px 14px";
+    el.style.borderRadius = "14px";
+    el.style.boxShadow = "0 20px 50px rgba(0,0,0,.18)";
+    el.style.background = "#111827";
+    el.style.color = "#fff";
+    el.style.fontSize = "14px";
+    el.style.lineHeight = "1.35";
+    el.style.display = "none";
+
+    document.body.appendChild(el);
+    return el;
+  }
+
+  function toast(msg, type = "info") {
+    const el = ensureToast();
+    el.textContent = msg || "";
+    el.style.display = msg ? "block" : "none";
+
+    if (type === "ok") el.style.background = "#065f46";
+    else if (type === "err") el.style.background = "#991b1b";
+    else el.style.background = "#111827";
+
+    if (toastTimer) clearTimeout(toastTimer);
+    toastTimer = setTimeout(() => {
+      el.style.display = "none";
+    }, 2500);
+  }
+
+  // =========================
+  // USER UI
+  // =========================
   function setUserUI(me) {
     const nombre = $("#nombre-usuario");
     const avatar = $("#avatar-usuario");
     const rol = $("#rol-usuario");
 
-    const full = `${me.nombres || ""} ${me.apellidos || ""}`.trim() || me.nombre_usuario || "usuario";
+    const full =
+      `${me.nombres || ""} ${me.apellidos || ""}`.trim() ||
+      me.nombre_usuario ||
+      "usuario";
+
     if (nombre) nombre.textContent = full;
     if (rol) rol.textContent = me.rol || "usuario";
     if (avatar) avatar.textContent = (full[0] || "U").toUpperCase();
 
-    // perfil (si existe)
     $("#pf-nombres") && ($("#pf-nombres").textContent = me.nombres || "-");
     $("#pf-apellidos") && ($("#pf-apellidos").textContent = me.apellidos || "-");
     $("#pf-usuario") && ($("#pf-usuario").textContent = me.nombre_usuario || "-");
@@ -94,7 +186,9 @@
   }
 
   async function doLogout() {
-    try { await apiPOST("logout", {}); } catch {}
+    try {
+      await apiPOST("logout", {});
+    } catch {}
     window.location.href = "../index.html";
   }
 
@@ -103,11 +197,7 @@
   }
 
   function showSection(id) {
-    const ids = [
-      "seccion-disponibilidad",
-      "seccion-reservas",
-      "seccion-perfil",
-    ];
+    const ids = ["seccion-disponibilidad", "seccion-reservas", "seccion-perfil"];
     ids.forEach((x) => {
       const el = document.getElementById(x);
       if (!el) return;
@@ -117,16 +207,22 @@
     });
   }
 
-  // ====== MODAL RESERVA ======
-  let reservaPendiente = null; // {aula_id, franja_id, fecha}
+  // =========================
+  // MODAL RESERVA
+  // =========================
+  let reservaPendiente = null;
 
   function openModalReserva({ aula, franja, fechaISO }) {
-    reservaPendiente = { aula_id: Number(aula.id), franja_id: Number(franja.id), fecha: fechaISO };
+    reservaPendiente = {
+      aula_id: Number(aula.id),
+      franja_id: Number(franja.id),
+      fecha: fechaISO,
+    };
 
     $("#input-aula").value = aula.codigo;
     $("#input-fecha").value = fechaISO;
-    $("#input-hora-inicio").value = String(franja.hora_inicio || "").slice(0,5);
-    $("#input-hora-fin").value = String(franja.hora_fin || "").slice(0,5);
+    $("#input-hora-inicio").value = String(franja.hora_inicio || "").slice(0, 5);
+    $("#input-hora-fin").value = String(franja.hora_fin || "").slice(0, 5);
 
     $("#overlay-modal")?.classList.remove("oculto");
     $("#modal-reserva")?.classList.remove("oculto");
@@ -138,27 +234,184 @@
     reservaPendiente = null;
   }
 
-  function bindModal() {
+  function bindModalReserva() {
     $("#btn-cerrar-modal")?.addEventListener("click", closeModalReserva);
     $("#btn-cancelar-modal")?.addEventListener("click", closeModalReserva);
     $("#overlay-modal")?.addEventListener("click", closeModalReserva);
 
     $("#btn-confirmar-reserva")?.addEventListener("click", async () => {
       if (!reservaPendiente) return;
+
+      const btn = $("#btn-confirmar-reserva");
+      const old = btn?.textContent || "";
+      if (btn) {
+        btn.textContent = "creando...";
+        btn.disabled = true;
+      }
+
       try {
         const r = await apiPOST("reservas_create", reservaPendiente);
-        alert("reserva creada. código: " + (r.codigo_checkin || ""));
+
+        // sacar datos que YA están en el modal (vienen de BD)
+        const aula = $("#input-aula")?.value || "";
+        const fecha = $("#input-fecha")?.value || "";
+        const hi = $("#input-hora-inicio")?.value || "";
+        const hf = $("#input-hora-fin")?.value || "";
+
         closeModalReserva();
         await renderDisponibilidad();
         await loadMisReservas();
+
+        // ✅ abrir modal del código check-in
+        openModalCodigo({
+          codigo: r.codigo_checkin,
+          aula,
+          fecha,
+          horario: `${hi}-${hf}`,
+        });
+
       } catch (e) {
-        alert(e.message || "error");
+        toast(e.message || "error al crear reserva", "err");
+      } finally {
+        if (btn) {
+          btn.textContent = old;
+          btn.disabled = false;
+        }
       }
     });
   }
 
-  // ====== DISPONIBILIDAD (HOY / MAÑANA / SEMANA) ======
-  let vista = "hoy"; // hoy | manana | semana
+  // =========================
+  // MODAL REPORTE
+  // =========================
+  let reportePendiente = null;
+
+  function showRpMsg(texto, isError = true) {
+    const box = document.getElementById("rp-error");
+    if (!box) return;
+    box.textContent = texto || "";
+    box.style.display = texto ? "block" : "none";
+    box.style.color = isError ? "#dc2626" : "#15803d";
+    box.style.backgroundColor = isError ? "#fee2e2" : "#dcfce7";
+    box.style.padding = "12px";
+    box.style.borderRadius = "10px";
+  }
+
+  function openModalReporte(row) {
+    reportePendiente = {
+      reserva_id: Number(row.id),
+      aula_id: Number(row.aula_id),
+      aula_codigo: String(row.aula_codigo || row.aula || ""),
+      fecha: String(row.fecha || ""),
+      hora_inicio: String(row.hora_inicio || "").slice(0, 5),
+      hora_fin: String(row.hora_fin || "").slice(0, 5),
+    };
+
+    document.getElementById("rp-aula").value = reportePendiente.aula_codigo || "-";
+    document.getElementById("rp-fecha").value = reportePendiente.fecha || "-";
+    document.getElementById("rp-horario").value = `${reportePendiente.hora_inicio}-${reportePendiente.hora_fin}`;
+    document.getElementById("rp-gravedad").value = "baja";
+    document.getElementById("rp-descripcion").value = "";
+    showRpMsg("");
+
+    document.getElementById("overlay-reporte")?.classList.remove("oculto");
+    document.getElementById("modal-reporte")?.classList.remove("oculto");
+    setTimeout(() => document.getElementById("rp-descripcion")?.focus(), 50);
+  }
+
+  function closeModalReporte() {
+    document.getElementById("overlay-reporte")?.classList.add("oculto");
+    document.getElementById("modal-reporte")?.classList.add("oculto");
+    reportePendiente = null;
+    showRpMsg("");
+  }
+
+  function bindModalReporte() {
+    document.getElementById("btn-cerrar-reporte")?.addEventListener("click", closeModalReporte);
+    document.getElementById("btn-cancelar-reporte")?.addEventListener("click", closeModalReporte);
+    document.getElementById("overlay-reporte")?.addEventListener("click", closeModalReporte);
+
+    document.getElementById("btn-enviar-reporte")?.addEventListener("click", async () => {
+      if (!reportePendiente) return;
+
+      const gravedad = (document.getElementById("rp-gravedad")?.value || "baja").toLowerCase();
+      const descripcion = (document.getElementById("rp-descripcion")?.value || "").trim();
+
+      if (!descripcion) {
+        showRpMsg("describe el uso indebido para poder enviar el reporte");
+        return;
+      }
+
+      const btn = document.getElementById("btn-enviar-reporte");
+      const old = btn?.textContent || "";
+      if (btn) {
+        btn.textContent = "enviando...";
+        btn.disabled = true;
+      }
+
+      try {
+        await repPOST("create", {
+          reserva_id: reportePendiente.reserva_id,
+          aula_id: reportePendiente.aula_id,
+          gravedad,
+          descripcion,
+        });
+
+        showRpMsg("✓ reporte enviado", false);
+        toast("reporte enviado", "ok");
+        await loadMisReservas();
+        setTimeout(closeModalReporte, 450);
+
+      } catch (e) {
+        showRpMsg(e.message || "error al enviar reporte");
+      } finally {
+        if (btn) {
+          btn.textContent = old;
+          btn.disabled = false;
+        }
+      }
+    });
+  }
+
+  // =========================
+  // MODAL CÓDIGO CHECK-IN
+  // =========================
+  function openModalCodigo({ codigo, aula, fecha, horario }) {
+    const t = document.getElementById("codigo-checkin-texto");
+    const meta = document.getElementById("codigo-checkin-meta");
+
+    if (t) t.textContent = String(codigo || "----");
+    if (meta) meta.textContent = `${aula || ""} · ${fecha || ""} · ${horario || ""}`.trim();
+
+    document.getElementById("overlay-codigo")?.classList.remove("oculto");
+    document.getElementById("modal-codigo")?.classList.remove("oculto");
+  }
+
+  function closeModalCodigo() {
+    document.getElementById("overlay-codigo")?.classList.add("oculto");
+    document.getElementById("modal-codigo")?.classList.add("oculto");
+  }
+
+  function bindModalCodigo() {
+    document.getElementById("btn-cerrar-codigo")?.addEventListener("click", closeModalCodigo);
+    document.getElementById("btn-ok-codigo")?.addEventListener("click", closeModalCodigo);
+    document.getElementById("overlay-codigo")?.addEventListener("click", closeModalCodigo);
+
+    document.getElementById("btn-copiar-codigo")?.addEventListener("click", async () => {
+      const codigo = document.getElementById("codigo-checkin-texto")?.textContent || "";
+      try {
+        await navigator.clipboard.writeText(codigo.trim());
+        toast("código copiado", "ok");
+      } catch {
+        toast("no se pudo copiar", "err");
+      }
+    });
+  }
+
+  // =========================
+  // DISPONIBILIDAD
+  // =========================
+  let vista = "hoy";
 
   function setTextoVista() {
     const p = $("#texto-filtro-actual");
@@ -176,7 +429,7 @@
       return { from: m, to: m, days: [m] };
     }
     const start = startOfWeekMonday(hoy);
-    const days = [0,1,2,3,4].map((i) => addDays(start, i));
+    const days = [0, 1, 2, 3, 4].map((i) => addDays(start, i));
     return { from: days[0], to: days[days.length - 1], days };
   }
 
@@ -288,7 +541,9 @@
     });
   }
 
-  // ====== MIS RESERVAS ======
+  // =========================
+  // MIS RESERVAS
+  // =========================
   async function loadMisReservas() {
     const box = $("#lista-reservas-usuario");
     if (!box) return;
@@ -302,37 +557,91 @@
       return;
     }
 
-    box.innerHTML = rows.map((x) => `
-      <div class="reporte-item">
-        <div class="reporte-header">
-          <div>
-            <div class="reporte-usuario">reserva #${escapeHtml(x.id)} - ${escapeHtml(x.aula_codigo || "")}</div>
-            <div class="reporte-fecha">${escapeHtml(x.fecha)} · ${escapeHtml(x.hora_inicio)}-${escapeHtml(x.hora_fin)}</div>
-          </div>
-          <span class="estado-reporte ${String(x.estado).toLowerCase()==="activa"?"estado-pendiente":"estado-resuelto"}">${escapeHtml(x.estado)}</span>
-        </div>
-        <div class="reporte-mensaje"><strong>código check-in:</strong> ${escapeHtml(x.codigo_checkin || "-")}</div>
-        <div class="acciones-reporte">
-          <button class="btn-primario btn-accion-pequeno" data-cancel="${escapeHtml(x.id)}">cancelar</button>
-        </div>
-      </div>
-    `).join("");
+    // conteo de reportes por reserva (si tu reporte.php tiene action=count)
+    const ids = rows.map((x) => x.id).join(",");
+    let counts = {};
+    try {
+      const c = await repGET("count", { ids });
+      counts = c?.counts || {};
+    } catch {
+      counts = {};
+    }
 
+    box.innerHTML = rows
+      .map((x) => {
+        const cnt = Number(counts[String(x.id)] || 0);
+        const estado = String(x.estado || "").toLowerCase();
+        const puedeCancelar = estado === "activa";
+
+        return `
+          <div class="reporte-item">
+            <div class="reporte-header">
+              <div>
+                <div class="reporte-usuario">reserva #${escapeHtml(x.id)} - ${escapeHtml(x.aula_codigo || "")}</div>
+                <div class="reporte-fecha">fecha: ${escapeHtml(x.fecha)} · horario: ${escapeHtml(x.hora_inicio)} - ${escapeHtml(x.hora_fin)}</div>
+                <div class="reporte-fecha">código check-in: <strong>${escapeHtml(x.codigo_checkin || "-")}</strong></div>
+                <div class="reporte-fecha">reportes: ${cnt}</div>
+              </div>
+              <span class="estado-reporte ${estado === "activa" ? "estado-pendiente" : "estado-resuelto"}">${escapeHtml(x.estado)}</span>
+            </div>
+
+            <div class="acciones-reporte">
+              ${
+                puedeCancelar
+                  ? `<button class="btn-accion-pequeno" data-cancel="${escapeHtml(x.id)}">cancelar</button>`
+                  : ``
+              }
+              <button class="btn-accion-pequeno" data-report="${escapeHtml(x.id)}">reportar uso indebido</button>
+              <button class="btn-accion-pequeno" data-vercodigo="${escapeHtml(x.id)}">ver código</button>
+            </div>
+          </div>
+        `;
+      })
+      .join("");
+
+    // cancelar
     box.querySelectorAll("[data-cancel]").forEach((b) => {
       b.addEventListener("click", async () => {
         const id = Number(b.getAttribute("data-cancel"));
         try {
           await apiPOST("reservas_cancel", { id });
+          toast("reserva cancelada", "ok");
           await renderDisponibilidad();
           await loadMisReservas();
         } catch (e) {
-          alert(e.message || "error");
+          toast(e.message || "error al cancelar", "err");
         }
+      });
+    });
+
+    // reportar
+    box.querySelectorAll("[data-report]").forEach((b) => {
+      b.addEventListener("click", () => {
+        const id = Number(b.getAttribute("data-report"));
+        const row = rows.find((x) => Number(x.id) === id);
+        if (row) openModalReporte(row);
+      });
+    });
+
+    // ver código
+    box.querySelectorAll("[data-vercodigo]").forEach((b) => {
+      b.addEventListener("click", () => {
+        const id = Number(b.getAttribute("data-vercodigo"));
+        const row = rows.find((x) => Number(x.id) === id);
+        if (!row) return;
+        openModalCodigo({
+          codigo: row.codigo_checkin,
+          aula: row.aula_codigo || "",
+          fecha: row.fecha || "",
+          horario: `${String(row.hora_inicio || "").slice(0, 5)}-${String(row.hora_fin || "").slice(0, 5)}`,
+        });
       });
     });
   }
 
-  // ====== NAV ======
+  // =========================
+  // NAV
+  // =========================
   function bindNav() {
     $("#btn-hoy")?.addEventListener("click", async () => {
       vista = "hoy";
@@ -362,6 +671,9 @@
     });
   }
 
+  // =========================
+  // INIT
+  // =========================
   async function init() {
     const meRes = await apiGET("me");
     if (!meRes) {
@@ -372,15 +684,20 @@
     setUserUI(meRes.me);
     bindLogout();
     bindNav();
-    bindModal();
+
+    bindModalReserva();
+    bindModalReporte();
+    bindModalCodigo(); // ✅ ESTO ERA LO QUE FALTABA
 
     vista = "hoy";
     showSection("seccion-disponibilidad");
     await renderDisponibilidad();
+    await loadMisReservas();
   }
 
   init().catch((e) => {
-    alert(e.message || "error");
+    console.error(e);
+    // aquí sí dejo un fallback simple
     window.location.href = "../index.html";
   });
 })();

@@ -28,12 +28,23 @@ function need_login() {
 
 function need_role($roles) {
   need_login();
+  global $enlace;
+
   $rol = strtolower((string)($_SESSION["rol"] ?? ""));
+
+  if ($rol === "") {
+    $me = fetch_me_db($enlace, (int)$_SESSION["usuario_id"]);
+    $rol = strtolower((string)($me["rol"] ?? ""));
+    if ($rol !== "") $_SESSION["rol"] = $rol;
+  }
+
   $roles = array_map(fn($r) => strtolower((string)$r), $roles);
+
   if (!in_array($rol, $roles, true)) {
     json_out(["ok" => false, "error" => "no autorizado"], 403);
   }
 }
+
 
 function fetch_me_db($enlace, $id) {
   $sql = "SELECT u.id,u.nombres,u.apellidos,u.nombre_usuario,u.correo,u.telefono,u.activo,

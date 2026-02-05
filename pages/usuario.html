@@ -129,6 +129,90 @@
       </div>
     </div>
   </div>
+<!-- MODAL REPORTE -->
+<div id="overlay-reporte" class="overlay oculto"></div>
+<div id="modal-reporte" class="modal oculto">
+  <div class="modal-contenido">
+    <div class="modal-header">
+      <h3>reportar uso indebido</h3>
+      <button id="btn-cerrar-reporte" class="btn-cerrar-modal">×</button>
+    </div>
+    <!-- MODAL CODIGO CHECK-IN -->
+<div id="overlay-codigo" class="overlay oculto"></div>
+<div id="modal-codigo" class="modal oculto">
+  <div class="modal-contenido">
+    <div class="modal-header">
+      <h3>código de check-in</h3>
+      <button id="btn-cerrar-codigo" class="btn-cerrar-modal">×</button>
+    </div>
+
+    <div class="modal-body">
+      <p style="margin:0 0 10px;color:var(--text-light);">
+        guarda este código y entrégaselo al encargado para validar tu entrada.
+      </p>
+
+      <div style="
+        border:1px dashed var(--border);
+        border-radius:14px;
+        padding:14px;
+        text-align:center;
+        font-size:28px;
+        font-weight:800;
+        letter-spacing:6px;
+        background: rgba(79,70,229,.06);
+      " id="codigo-checkin-texto">----</div>
+
+      <div id="codigo-checkin-meta" style="margin-top:10px;color:var(--text-light);font-size:.92rem;"></div>
+    </div>
+
+    <div class="modal-footer">
+      <button id="btn-copiar-codigo" class="btn-primario">copiar</button>
+      <button id="btn-ok-codigo" class="btn-secundario">ok</button>
+    </div>
+  </div>
+</div>
+
+
+    <div class="modal-body">
+      <div class="form-crear-aula">
+        <div class="grid-form-aula">
+          <div class="form-grupo">
+            <label>aula:</label>
+            <input type="text" id="rp-aula" readonly>
+          </div>
+          <div class="form-grupo">
+            <label>fecha:</label>
+            <input type="text" id="rp-fecha" readonly>
+          </div>
+          <div class="form-grupo">
+            <label>horario:</label>
+            <input type="text" id="rp-horario" readonly>
+          </div>
+          <div class="form-grupo">
+            <label>gravedad:</label>
+            <select id="rp-gravedad">
+              <option value="baja">baja</option>
+              <option value="media">media</option>
+              <option value="alta">alta</option>
+            </select>
+          </div>
+
+          <div class="form-grupo" style="grid-column:1 / -1;">
+            <label>descripción:</label>
+            <textarea id="rp-descripcion" rows="4" placeholder="describe lo ocurrido..." style="width:100%;resize:vertical;"></textarea>
+          </div>
+
+          <div id="rp-error" class="error-mensaje" style="display:none; grid-column:1 / -1;"></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="modal-footer">
+      <button id="btn-enviar-reporte" class="btn-primario">enviar reporte</button>
+      <button id="btn-cancelar-reporte" class="btn-secundario">cancelar</button>
+    </div>
+  </div>
+</div>
 
 <script type="module">
   import { requireAuth, startIdleLogout } from "../js/guard.js";
