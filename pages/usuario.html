@@ -39,7 +39,6 @@
 
   <main class="layout-principal">
 
-    <!-- DISPONIBILIDAD -->
     <section id="seccion-disponibilidad" class="seccion seccion-activa">
       <div class="seccion-header">
         <h2>Disponibilidad de aulas</h2>
@@ -60,7 +59,6 @@
       </p>
     </section>
 
-    <!-- MIS RESERVAS -->
     <section id="seccion-reservas" class="seccion seccion-oculta">
       <div class="seccion-header">
         <h2>Mis reservas</h2>
@@ -70,7 +68,6 @@
       <div id="lista-reservas-usuario" class="lista-reportes"></div>
     </section>
 
-    <!-- PERFIL -->
     <section id="seccion-perfil" class="seccion seccion-oculta">
       <div class="seccion-header">
         <h2>Mi perfil</h2>
@@ -91,7 +88,9 @@
 
   </main>
 
-  <!-- MODAL RESERVA -->
+  <!-- =======================
+       MODAL RESERVA
+  ======================== -->
   <div id="overlay-modal" class="overlay oculto"></div>
   <div id="modal-reserva" class="modal oculto">
     <div class="modal-contenido">
@@ -129,102 +128,111 @@
       </div>
     </div>
   </div>
-<!-- MODAL REPORTE -->
-<div id="overlay-reporte" class="overlay oculto"></div>
-<div id="modal-reporte" class="modal oculto">
-  <div class="modal-contenido">
-    <div class="modal-header">
-      <h3>reportar uso indebido</h3>
-      <button id="btn-cerrar-reporte" class="btn-cerrar-modal">×</button>
-    </div>
-    <!-- MODAL CODIGO CHECK-IN -->
-<div id="overlay-codigo" class="overlay oculto"></div>
-<div id="modal-codigo" class="modal oculto">
-  <div class="modal-contenido">
-    <div class="modal-header">
-      <h3>código de check-in</h3>
-      <button id="btn-cerrar-codigo" class="btn-cerrar-modal">×</button>
-    </div>
 
-    <div class="modal-body">
-      <p style="margin:0 0 10px;color:var(--text-light);">
-        guarda este código y entrégaselo al encargado para validar tu entrada.
-      </p>
+  <!-- =======================
+       MODAL REPORTE
+  ======================== -->
+  <div id="overlay-reporte" class="overlay oculto"></div>
+  <div id="modal-reporte" class="modal oculto">
+    <div class="modal-contenido">
+      <div class="modal-header">
+        <h3>reportar uso indebido</h3>
+        <button id="btn-cerrar-reporte" class="btn-cerrar-modal">×</button>
+      </div>
 
-      <div style="
-        border:1px dashed var(--border);
-        border-radius:14px;
-        padding:14px;
-        text-align:center;
-        font-size:28px;
-        font-weight:800;
-        letter-spacing:6px;
-        background: rgba(79,70,229,.06);
-      " id="codigo-checkin-texto">----</div>
+      <div class="modal-body">
+        <div class="form-crear-aula">
+          <div class="grid-form-aula">
+            <div class="form-grupo">
+              <label>aula:</label>
+              <input type="text" id="rp-aula" readonly>
+            </div>
+            <div class="form-grupo">
+              <label>fecha:</label>
+              <input type="text" id="rp-fecha" readonly>
+            </div>
+            <div class="form-grupo">
+              <label>horario:</label>
+              <input type="text" id="rp-horario" readonly>
+            </div>
+            <div class="form-grupo">
+              <label>gravedad:</label>
+              <select id="rp-gravedad">
+                <option value="baja">baja</option>
+                <option value="media">media</option>
+                <option value="alta">alta</option>
+              </select>
+            </div>
 
-      <div id="codigo-checkin-meta" style="margin-top:10px;color:var(--text-light);font-size:.92rem;"></div>
-    </div>
+            <div class="form-grupo" style="grid-column:1 / -1;">
+              <label>descripción:</label>
+              <textarea id="rp-descripcion" rows="4" placeholder="describe lo ocurrido..." style="width:100%;resize:vertical;"></textarea>
+            </div>
 
-    <div class="modal-footer">
-      <button id="btn-copiar-codigo" class="btn-primario">copiar</button>
-      <button id="btn-ok-codigo" class="btn-secundario">ok</button>
-    </div>
-  </div>
-</div>
-
-
-    <div class="modal-body">
-      <div class="form-crear-aula">
-        <div class="grid-form-aula">
-          <div class="form-grupo">
-            <label>aula:</label>
-            <input type="text" id="rp-aula" readonly>
+            <div id="rp-error" class="error-mensaje" style="display:none; grid-column:1 / -1;"></div>
           </div>
-          <div class="form-grupo">
-            <label>fecha:</label>
-            <input type="text" id="rp-fecha" readonly>
-          </div>
-          <div class="form-grupo">
-            <label>horario:</label>
-            <input type="text" id="rp-horario" readonly>
-          </div>
-          <div class="form-grupo">
-            <label>gravedad:</label>
-            <select id="rp-gravedad">
-              <option value="baja">baja</option>
-              <option value="media">media</option>
-              <option value="alta">alta</option>
-            </select>
-          </div>
-
-          <div class="form-grupo" style="grid-column:1 / -1;">
-            <label>descripción:</label>
-            <textarea id="rp-descripcion" rows="4" placeholder="describe lo ocurrido..." style="width:100%;resize:vertical;"></textarea>
-          </div>
-
-          <div id="rp-error" class="error-mensaje" style="display:none; grid-column:1 / -1;"></div>
         </div>
       </div>
-    </div>
 
-    <div class="modal-footer">
-      <button id="btn-enviar-reporte" class="btn-primario">enviar reporte</button>
-      <button id="btn-cancelar-reporte" class="btn-secundario">cancelar</button>
+      <div class="modal-footer">
+        <button id="btn-enviar-reporte" class="btn-primario">enviar reporte</button>
+        <button id="btn-cancelar-reporte" class="btn-secundario">cancelar</button>
+      </div>
     </div>
   </div>
-</div>
 
-<script type="module">
-  import { requireAuth, startIdleLogout } from "../js/guard.js";
-  const me = await requireAuth(["usuario"]);
-  if (!me) location.href = "../index.html";
-  startIdleLogout(3);
+  <!-- =======================
+       MODAL CÓDIGO CHECK-IN
+       (IMPORTANTE: fuera del modal-reporte)
+  ======================== -->
+  <div id="overlay-codigo" class="overlay oculto"></div>
+  <div id="modal-codigo" class="modal oculto">
+    <div class="modal-contenido">
+      <div class="modal-header">
+        <h3>código de check-in</h3>
+        <button id="btn-cerrar-codigo" class="btn-cerrar-modal">×</button>
+      </div>
 
-  const s = document.createElement("script");
-  s.src = "../js/usuario.js";
-  s.defer = true;
-  document.body.appendChild(s);
-</script>
+      <div class="modal-body">
+        <p style="margin:0 0 10px;color:var(--text-light);">
+          guarda este código y entrégaselo al encargado para validar tu entrada.
+        </p>
+
+        <div
+          id="codigo-checkin-texto"
+          style="
+            border:1px dashed var(--border);
+            border-radius:14px;
+            padding:14px;
+            text-align:center;
+            font-size:28px;
+            font-weight:800;
+            letter-spacing:6px;
+            background: rgba(79,70,229,.06);
+          "
+        >----</div>
+
+        <div id="codigo-checkin-meta" style="margin-top:10px;color:var(--text-light);font-size:.92rem;"></div>
+      </div>
+
+      <div class="modal-footer">
+        <button id="btn-copiar-codigo" class="btn-primario">copiar</button>
+        <button id="btn-ok-codigo" class="btn-secundario">ok</button>
+      </div>
+    </div>
+  </div>
+
+  <script type="module">
+    import { requireAuth, startIdleLogout } from "../js/guard.js";
+    const me = await requireAuth(["usuario"]);
+    if (!me) location.href = "../index.html";
+    startIdleLogout(3);
+
+    const s = document.createElement("script");
+    s.src = "../js/usuario.js";
+    s.defer = true;
+    document.body.appendChild(s);
+  </script>
 
 </body>
 </html>

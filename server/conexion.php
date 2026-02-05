@@ -1,7 +1,7 @@
 <?php
-$servidor = "localhost";
-$usuario = "admin";
-$clave = "admin";
+$servidor = "localhost:3307";
+$usuario = "root";
+$clave = "1234";
 $bd = "proyecto_proce";
 
 $enlace = mysqli_connect($servidor, $usuario, $clave, $bd);
